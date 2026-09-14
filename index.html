@@ -41,6 +41,8 @@
 
         .card-face {
             position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
@@ -109,9 +111,14 @@
         
         <!-- Progress bar (hidden on home page) -->
         <div id="progress-container" class="max-w-4xl mx-auto mt-4 hidden">
-            <div class="flex justify-between text-xs text-slate-400 mb-2 font-medium">
-                <span id="current-deck-name">Matière</span>
-                <span id="progress-text">0 / 0</span>
+            <div class="flex justify-between items-end mb-2">
+                <div class="flex flex-col">
+                    <span id="current-deck-name" class="text-xs text-slate-400 font-medium">Matière</span>
+                    <button onclick="hardResetDeck()" class="text-[10px] text-slate-500 hover:text-rose-400 flex items-center mt-1 transition-colors">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Réinitialiser la progression
+                    </button>
+                </div>
+                <span id="progress-text" class="text-xs text-slate-400 font-medium">0 / 0</span>
             </div>
             <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
                 <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-2.5 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
@@ -205,11 +212,16 @@
                             <option value="19">Semaine 20 (15 Mars)</option>
                             <option value="20">Semaine 21 (22 Mars)</option>
                             <option value="21">Semaine 22 (29 Mars)</option>
-                            <option value="22">Semaine 23 (5 Mai)</option>
-                            <option value="23">Semaine 24 (12 Mai)</option>
+                            <option value="22">Semaine 23 (5 Avr)</option>
+                            <option value="23">Semaine 24 (12 Avr)</option>
                         </select>
                     </div>
                 </div>
+            </div>
+
+            <!-- Bannière des DS -->
+            <div id="agenda-banner" class="hidden mb-6 p-4 rounded-xl border font-semibold text-center flex flex-col items-center justify-center gap-2">
+                <!-- Rempli par le javascript -->
             </div>
 
             <h3 class="text-xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Vos Khôlles programmées :</h3>
@@ -224,10 +236,10 @@
                 <i class="fa-solid fa-check-double"></i>
             </div>
             <h2 class="text-3xl font-bold text-white mb-4">Session terminée !</h2>
-            <p class="text-slate-300 mb-8">Vous avez maîtrisé toutes les cartes de ce paquet.</p>
+            <p class="text-slate-300 mb-8">Vous avez maîtrisé toutes les cartes de ce paquet aujourd'hui.</p>
             <div class="flex gap-4">
-                <button onclick="resetSession()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition-colors">
-                    <i class="fa-solid fa-rotate-right mr-2"></i> Refaire
+                <button onclick="hardResetDeck()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition-colors border border-slate-600">
+                    <i class="fa-solid fa-rotate-left mr-2"></i> Recommencer à zéro
                 </button>
                 <button onclick="showMainMenu()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-500/30">
                     <i class="fa-solid fa-list mr-2"></i> Menu
@@ -239,13 +251,18 @@
         <div id="flashcard-area" class="w-full hidden">
             
             <div class="text-center mb-4 text-sm text-slate-400 font-medium">
-                Cartes à réviser dans la session : <span id="cards-remaining-display">0</span>
+                Cartes restantes pour cette session : <span id="cards-remaining-display">0</span>
             </div>
 
             <div class="scene mb-6">
                 <div class="card" id="flashcard" onclick="flipCard()">
                     <!-- Front -->
-                    <div class="card-face card-face-front">
+                    <div class="card-face card-face-front relative">
+                        <!-- INDICATEUR DE DIFFICULTÉ -->
+                        <div id="difficulty-badge" class="absolute top-4 right-4 text-[10px] sm:text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-full hidden backdrop-blur-md flex items-center">
+                            <i class="fa-solid fa-fire mr-1.5"></i> Difficile
+                        </div>
+
                         <div class="text-center w-full max-h-full overflow-y-auto px-2">
                             <i id="card-icon" class="fa-regular fa-circle-question text-3xl mb-4 opacity-50"></i>
                             <h2 id="card-front-text" class="text-xl sm:text-2xl md:text-3xl font-semibold leading-tight text-white">
@@ -258,7 +275,7 @@
                     </div>
                     
                     <!-- Back -->
-                    <div class="card-face card-face-back" id="card-back-bg">
+                    <div class="card-face card-face-back relative" id="card-back-bg">
                         <div class="text-center w-full max-h-full overflow-y-auto px-2 pb-10">
                             <div class="text-white/70 text-sm font-semibold uppercase tracking-wider mb-3">Réponse</div>
                             <div id="card-back-text" class="text-base sm:text-lg md:text-xl leading-relaxed font-medium">
@@ -294,8 +311,36 @@
         </div>
     </main>
 
-        <!-- MAIN APP LOGIC -->
+    <!-- MAIN APP LOGIC -->
     <script>
+        // --- DONNÉES DE L'AGENDA (DS et Observations) ---
+        const agendaData = {
+            "0": { date: "19 sept.", ds: "Physique+Math.", obs: "" },
+            "1": { date: "26 sept.", ds: "Méca+Français", obs: "" },
+            "2": { date: "3 oct.", ds: "Élec+Anglais", obs: "" },
+            "3": { date: "10 oct.", ds: "Mathématiques", obs: "" },
+            "4": { date: "17 oct.", ds: "", obs: "" },
+            "5": { date: "7 nov.", ds: "Physique", obs: "" },
+            "6": { date: "14 nov.", ds: "Méca+Français", obs: "Mercredi férié" },
+            "7": { date: "21 nov.", ds: "Élec+Anglais", obs: "" },
+            "8": { date: "28 nov.", ds: "Mathématiques", obs: "" },
+            "9": { date: "5 déc.", ds: "Physique", obs: "" },
+            "10": { date: "12 déc.", ds: "Méca+Français", obs: "" },
+            "11": { date: "19 déc.", ds: "", obs: "" },
+            "12": { date: "09 janv.", ds: "Élec+Anglais", obs: "" },
+            "13": { date: "16 janv.", ds: "Mathématiques", obs: "" },
+            "14": { date: "30 janv.", ds: "Méca+Français", obs: "" },
+            "15": { date: "06 févr.", ds: "Élec+Anglais", obs: "" },
+            "16": { date: "13 févr.", ds: "", obs: "" },
+            "17": { date: "20 févr.", ds: "Concours Blanc du mercredi au vendredi", obs: "" },
+            "18": { date: "13 mars", ds: "Mathématiques", obs: "" },
+            "19": { date: "20 mars", ds: "Physique", obs: "" },
+            "20": { date: "27 mars", ds: "Français+Anglais", obs: "" },
+            "21": { date: "03 avr.", ds: "Méca+Élec", obs: "Lundi férié" },
+            "22": { date: "10 avr.", ds: "", obs: "" },
+            "23": { date: "17 avr.", ds: "", obs: "" }
+        };
+
         // --- DONNÉES DU COLLOSCOPE (Année complète) ---
         const colloscopeData = [
             // Maths
@@ -346,7 +391,7 @@
             { subject: "Elec", prof: "M. Lemesle", room: "155", time: "Lun 17h45-18h40", icon: "fa-desktop", color: "text-emerald-400", bg: "bg-emerald-900/30", border: "border-emerald-500/30", groups: ["9", "4", "15", "10", "5", "-", "11", "6", "1", "-", "11", "6", "1", "-", "11", "6", "1", "-", "7", "2", "13", "-", "15", "10"] },
             { subject: "Elec", prof: "M. Poulet", room: "93", time: "Lun 16h50-17h45", icon: "fa-desktop", color: "text-emerald-400", bg: "bg-emerald-900/30", border: "border-emerald-500/30", groups: ["5", "-", "11", "6", "1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "12", "15", "10", "5", "8", "3", "14"] },
             { subject: "Elec", prof: "M. Poulet", room: "79", time: "Mer 12h00-12h55", icon: "fa-desktop", color: "text-emerald-400", bg: "bg-emerald-900/30", border: "border-emerald-500/30", groups: ["1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "3", "14", "9", "4", "11", "6"] },
-    
+            
             // TP Info
             { subject: "TP Info", prof: "M. Poulet", room: "93", time: "Lun 14h55-15h50", icon: "fa-laptop-code", color: "text-emerald-400", bg: "bg-emerald-900/30", border: "border-emerald-500/30", groups: ["6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15"] },
             { subject: "TP Info", prof: "M. Devalland", room: "410", time: "Ven 15h50-16h45", icon: "fa-laptop-code", color: "text-emerald-400", bg: "bg-emerald-900/30", border: "border-emerald-500/30", groups: ["11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5"] },
@@ -355,8 +400,9 @@
             // Français
             { subject: "Français", prof: "Mme Plassart", room: "312", time: "Ven 16h00-17h30", icon: "fa-book-open", color: "text-rose-400", bg: "bg-rose-900/30", border: "border-rose-500/30", groups: ["-", "-", "1", "12", "7", "2", "11", "6", "3", "14", "9", "4", "15", "10", "1", "13", "8", "3", "11", "6", "-", "5", "12", "7", "2", "13", "8"] },
             { subject: "Français", prof: "Mme Plassart", room: "312", time: "Ven 17h30-18h00", icon: "fa-book-open", color: "text-rose-400", bg: "bg-rose-900/30", border: "border-rose-500/30", groups: ["-", "-", "5.1", "15.1", "10.1", "5.2", "15.2", "10.2", "5.3", "-", "-", "-", "-", "14.1", "9.1", "4.1", "14.2", "9.2", "-", "4.2", "14.3", "9.3", "4.3", "15.3", "10.3"] }
-            ];
+        ];
 
+        // --- DONNÉES FLASHCARDS ---
         const physiqueCards = [
             { front: "Expression du vecteur position en coordonnées cartésiennes", back: "$$\\vec{OM} = x\\cdot\\vec{u}_x + y\\cdot\\vec{u}_y + z\\cdot\\vec{u}_z$$ (en mètres, m).", hint: "Pensez aux 3 axes de l'espace (x, y, z) et à leurs vecteurs unitaires." },
             { front: "Expression du vecteur vitesse instantanée en coordonnées cartésiennes", back: "$$\\vec{v}_{M/R} = \\left(\\frac{d\\vec{OM}}{dt}\\right)_R = \\dot{x}\\cdot\\vec{u}_x + \\dot{y}\\cdot\\vec{u}_y + \\dot{z}\\cdot\\vec{u}_z$$ (en $m.s^{-1}$).", hint: "Dérivée première du vecteur position par rapport au temps." },
@@ -415,11 +461,19 @@
             { front: "Primitives de formes $u'$", back: "$$\\int \\frac{u'}{u} dx = \\ln(|u|) + C$$<br>$$\\int \\frac{u'}{\\sqrt{u}} dx = 2\\sqrt{u} + C$$<br>$$\\int u'u^n dx = \\frac{u^{n+1}}{n+1} + C$$", hint: "Issu de votre Mémento manuscrit." }
         ];
 
+        const elecCards = [
+            { front: "Loi des Nœuds (Kirchhoff)", back: "La somme des intensités des courants qui entrent par un nœud est égale à la somme des intensités des courants qui en sortent.<br>$$\\sum I_{entrants} = \\sum I_{sortants}$$", hint: "Traduit la conservation de la charge électrique." },
+            { front: "Loi des Mailles (Kirchhoff)", back: "Dans une maille orientée fermée, la somme algébrique des tensions est nulle : $$\\sum U_k = 0$$", hint: "Traduit la conservation de l'énergie électrique." },
+            { front: "Impédance complexe d'une Bobine (L)", back: "$$\\underline{Z}_L = jL\\omega$$", hint: "Provoque un déphasage de +90° du courant par rapport à la tension." },
+            { front: "Impédance complexe d'un Condensateur (C)", back: "$$\\underline{Z}_C = \\frac{1}{jC\\omega} = -j\\frac{1}{C\\omega}$$", hint: "Provoque un déphasage de -90° du courant par rapport à la tension." }
+        ];
+
         const decks = {
             'physique_s1': { title: "M1 & M2 : Cinématique & Énergies", subject: "Physique", icon: "fa-bolt", color: "text-yellow-400", bgGradient: "from-yellow-500 to-orange-600", cards: physiqueCards, known: new Set() },
             'mecanique_s1': { title: "Outils Maths (Vecteurs, Bases...)", subject: "Mécanique", icon: "fa-wrench", color: "text-orange-400", bgGradient: "from-orange-500 to-red-600", cards: mecaCards, known: new Set() },
             'maths_s1': { title: "Semaine 1 (Démos, Sommes, Binôme)", subject: "Mathématiques", icon: "fa-calculator", color: "text-blue-400", bgGradient: "from-blue-500 to-indigo-600", cards: mathCardsSemaine1, known: new Set() },
-            'maths_memento': { title: "Mémento complet (Dérivées, Trigo...)", subject: "Mathématiques", icon: "fa-book-open", color: "text-indigo-300", bgGradient: "from-indigo-600 to-purple-700", cards: mathCardsMemento, known: new Set() }
+            'maths_memento': { title: "Mémento complet (Dérivées, Trigo...)", subject: "Mathématiques", icon: "fa-book-open", color: "text-indigo-300", bgGradient: "from-indigo-600 to-purple-700", cards: mathCardsMemento, known: new Set() },
+            'elec_s1': { title: "Lois fondamentales & Impédances", subject: "Élec", icon: "fa-desktop", color: "text-emerald-400", bgGradient: "from-emerald-500 to-teal-700", cards: elecCards, known: new Set() }
         };
 
         const library = {
@@ -441,7 +495,7 @@
             'elec': { 
                 title: 'Élec', icon: 'fa-desktop', color: 'text-emerald-400', bgGradient: 'from-emerald-600 to-teal-900', 
                 rootDecks: [], 
-                weeks: {} 
+                weeks: { 's1': { title: 'Semaine 1 (14 Sept)', decks: ['elec_s1'] } } 
             }
         };
 
@@ -451,6 +505,42 @@
         let currentCardIndex = 0;
         let isFlipped = false;
         let studyQueue = [];
+        
+        // --- SYSTÈME DE SAUVEGARDE ET DE STATISTIQUES ---
+        let cardStats = JSON.parse(localStorage.getItem('khollapp_stats')) || {};
+
+        function saveProgress() {
+            const progress = {};
+            for (const [id, deck] of Object.entries(decks)) {
+                if (deck.known.size > 0) {
+                    progress[id] = Array.from(deck.known);
+                }
+            }
+            localStorage.setItem('khollapp_progress', JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const saved = JSON.parse(localStorage.getItem('khollapp_progress'));
+            if (saved) {
+                for (const [id, knownArray] of Object.entries(saved)) {
+                    if (decks[id]) {
+                        decks[id].known = new Set(knownArray);
+                    }
+                }
+            }
+        }
+
+        function getCardScore(deckId, cardId) {
+            if (!cardStats[deckId]) return 0;
+            return cardStats[deckId][cardId] || 0;
+        }
+
+        function updateCardScore(deckId, cardId, delta) {
+            if (!cardStats[deckId]) cardStats[deckId] = {};
+            let current = cardStats[deckId][cardId] || 0;
+            cardStats[deckId][cardId] = Math.max(0, current + delta);
+            localStorage.setItem('khollapp_stats', JSON.stringify(cardStats));
+        }
         
         // DOM Elements
         const mainMenuEl = document.getElementById('main-menu');
@@ -463,8 +553,42 @@
         const progressContainer = document.getElementById('progress-container');
         
         function initApp() {
+            loadProgress();
+            
+            // Auto-detect group from previous visit
+            const savedGroup = localStorage.getItem('khollapp_group');
+            if (savedGroup) {
+                document.getElementById('group-select').value = savedGroup;
+            }
+
+            // Auto-detect current week
+            const currentWeekIndex = getCurrentWeekIndex();
+            document.getElementById('week-select').value = currentWeekIndex;
+            
             renderRootFolders();
-            renderSchedule(); // Initialize colloscope list
+            renderSchedule(); 
+        }
+
+        function getCurrentWeekIndex() {
+            const now = new Date();
+            const startStr = "2026-09-14"; 
+            
+            if (now < new Date(startStr)) return "0";
+            
+            // Logique de dates basée sur vos données d'agenda
+            const weekDates = [
+                "2026-09-19", "2026-09-26", "2026-10-03", "2026-10-10", "2026-10-17",
+                "2026-11-07", "2026-11-14", "2026-11-21", "2026-11-28", "2026-12-05", "2026-12-12", "2026-12-19",
+                "2027-01-09", "2027-01-16", "2027-01-30", "2027-02-06", "2027-02-13", "2027-02-20",
+                "2027-03-13", "2027-03-20", "2027-03-27", "2027-04-03", "2027-04-10", "2027-04-17"
+            ];
+            
+            for (let i = 0; i < weekDates.length; i++) {
+                if (now <= new Date(weekDates[i])) {
+                    return i.toString();
+                }
+            }
+            return (weekDates.length - 1).toString();
         }
 
         function showMainMenu() {
@@ -476,7 +600,6 @@
             backBtn.classList.add('hidden');
             progressContainer.classList.add('hidden');
             
-            // Logique de retour "intelligent"
             if (currentFolderWeek) {
                 renderWeek(currentSubject, currentFolderWeek);
             } else if (currentSubject) {
@@ -523,14 +646,12 @@
             
             deckSelectionEl.innerHTML = '';
 
-            // Paquets racine (Ex: Mémento, qui ne dépendent pas d'une semaine)
             if (subject.rootDecks.length > 0) {
                 subject.rootDecks.forEach(deckId => {
                     deckSelectionEl.innerHTML += createDeckHTML(deckId, true);
                 });
             }
 
-            // Dossiers des semaines
             const weekKeys = Object.keys(subject.weeks);
             if (weekKeys.length > 0) {
                 weekKeys.forEach(weekId => {
@@ -571,7 +692,6 @@
             const total = deck.cards.length;
             const known = deck.known.size;
             const progress = total > 0 ? Math.round((known / total) * 100) : 0;
-            // Un badge spécial "Transversal" pour le Mémento de Maths par exemple
             const rootBadge = isRoot ? `<div class="absolute top-3 left-3 bg-indigo-900/60 border border-indigo-500/30 text-indigo-300 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded shadow-sm z-10"><i class="fa-solid fa-thumbtack mr-1"></i> Transversal</div>` : '';
 
             return `
@@ -609,14 +729,43 @@
         }
 
         function renderSchedule() {
-            const groupSelect = document.getElementById('group-select').value;
-            const weekSelect = document.getElementById('week-select').value;
+            const groupSelect = document.getElementById('group-select');
+            const weekSelect = document.getElementById('week-select');
+            
+            if (!groupSelect || !weekSelect) return;
+            
+            // Save preferences
+            localStorage.setItem('khollapp_group', groupSelect.value);
+
             scheduleResultsEl.innerHTML = '';
+            
+            // Mise à jour de la bannière Agenda (DS / OBS)
+            const agendaBanner = document.getElementById('agenda-banner');
+            const agendaInfo = agendaData[weekSelect.value];
+            
+            if (agendaInfo && (agendaInfo.ds || agendaInfo.obs)) {
+                let content = "";
+                if (agendaInfo.ds) {
+                    content += `<div class="text-blue-400"><i class="fa-solid fa-file-pen mr-2"></i> Devoir (Jusqu'au ${agendaInfo.date}) : <span class="text-white">${agendaInfo.ds}</span></div>`;
+                }
+                if (agendaInfo.obs) {
+                    content += `<div class="text-yellow-400 text-sm mt-1"><i class="fa-solid fa-circle-exclamation mr-1"></i> ${agendaInfo.obs}</div>`;
+                }
+                
+                agendaBanner.innerHTML = content;
+                agendaBanner.className = "mb-6 p-4 rounded-xl border font-semibold text-center flex flex-col items-center justify-center gap-1 bg-blue-900/20 border-blue-500/30";
+                if(agendaInfo.obs && !agendaInfo.ds) {
+                     agendaBanner.className = "mb-6 p-4 rounded-xl border font-semibold text-center flex flex-col items-center justify-center gap-1 bg-yellow-900/20 border-yellow-500/30";
+                }
+                agendaBanner.classList.remove('hidden');
+            } else {
+                agendaBanner.classList.add('hidden');
+            }
             
             let foundColles = false;
 
             colloscopeData.forEach(colle => {
-                const currentGroupData = colle.groups[weekSelect];
+                const currentGroupData = colle.groups[weekSelect.value];
                 
                 if (currentGroupData && currentGroupData !== "-") {
                     const groupsArray = currentGroupData.toString().split(',').map(s => s.trim());
@@ -625,12 +774,11 @@
                     let specialNote = "";
 
                     groupsArray.forEach(g => {
-                        if (g === groupSelect) {
+                        if (g === groupSelect.value) {
                             isMatch = true;
                         } else if (g.includes('.')) {
-                            // Gestion des sous-groupes (ex: "10.1" pour Groupe 10, Elève 1)
                             const parts = g.split('.');
-                            if (parts[0] === groupSelect) {
+                            if (parts[0] === groupSelect.value) {
                                 isMatch = true;
                                 specialNote = `<div class="mt-3 text-xs font-bold text-rose-300 bg-rose-900/40 inline-flex items-center px-2 py-1 rounded-md border border-rose-500/30"><i class="fa-solid fa-user-pen mr-2"></i> Uniquement pour l'élève n°${parts[1]}</div>`;
                             }
@@ -664,62 +812,45 @@
                 scheduleResultsEl.innerHTML = `
                     <div class="col-span-1 md:col-span-2 text-center p-8 bg-slate-800/50 rounded-xl border border-dashed border-slate-700">
                         <i class="fa-regular fa-face-smile text-slate-500 text-4xl mb-3"></i>
-                        <p class="text-slate-400">Aucune khôlle programmée pour le Groupe ${groupSelect} cette semaine.</p>
+                        <p class="text-slate-400">Aucune khôlle programmée pour le Groupe ${groupSelect.value} cette semaine.</p>
                     </div>
                 `;
             }
         }
 
-        function renderDeckMenu() {
-            deckSelectionEl.innerHTML = '';
-            for (const [id, deck] of Object.entries(decks)) {
-                const total = deck.cards.length;
-                const known = deck.known.size;
-                const progress = total > 0 ? Math.round((known / total) * 100) : 0;
-                
-                deckSelectionEl.innerHTML += `
-                    <div onclick="selectDeck('${id}')" class="bg-slate-800 border border-slate-700 hover:border-slate-500 rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl group relative overflow-hidden flex flex-col h-full">
-                        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${deck.bgGradient} opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-700 shadow-inner">
-                                <i class="fa-solid ${deck.icon} ${deck.color} text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider">${deck.subject}</h3>
-                            </div>
-                        </div>
-                        <h2 class="text-white font-semibold text-lg leading-tight mb-6 flex-grow group-hover:text-blue-300 transition-colors">${deck.title}</h2>
-                        
-                        <div class="mt-auto">
-                            <div class="flex justify-between text-xs text-slate-400 mb-2">
-                                <span>Progression</span>
-                                <span>${progress}% (${known}/${total})</span>
-                            </div>
-                            <div class="w-full bg-slate-900 rounded-full h-2">
-                                <div class="bg-gradient-to-r ${deck.bgGradient} h-2 rounded-full" style="width: ${progress}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
+        // --- ALGORITHME DE RÉPÉTITION ESPACÉE (Spaced Repetition) ---
         function selectDeck(id) {
             currentDeckId = id;
+            const deck = decks[currentDeckId];
             
             mainMenuEl.classList.add('hidden');
             flashcardAreaEl.classList.remove('hidden');
             backBtn.classList.remove('hidden');
             progressContainer.classList.remove('hidden');
             
-            const deck = decks[currentDeckId];
-            deck.known.clear(); // Reset pour la nouvelle session
+            // 1. Récupérer uniquement les cartes non maîtrisées
+            let availableCards = [];
+            for (let i = 0; i < deck.cards.length; i++) {
+                if (!deck.known.has(i)) {
+                    availableCards.push(i);
+                }
+            }
             
-            // Initialiser la file d'attente (système Anki)
-            studyQueue = Array.from({length: deck.cards.length}, (_, i) => i);
+            // 2. MÉLANGE TOTALEMENT ALÉATOIRE (Algorithme de Fisher-Yates)
+            for (let i = availableCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [availableCards[i], availableCards[j]] = [availableCards[j], availableCards[i]];
+            }
+            
+            // 3. TRIER PAR DIFFICULTÉ (Prioriser les cartes avec un haut 'struggle score')
+            // Vu qu'elles sont déjà mélangées, les cartes à score égal apparaîtront dans un ordre aléatoire
+            availableCards.sort((a, b) => {
+                return getCardScore(currentDeckId, b) - getCardScore(currentDeckId, a);
+            });
+            
+            studyQueue = availableCards;
             
             document.getElementById('current-deck-name').innerText = `${deck.subject} : ${deck.title}`;
-            
             document.getElementById('card-icon').className = `fa-regular ${deck.icon} ${deck.color} text-4xl mb-4 opacity-70`;
             document.getElementById('card-back-bg').className = `card-face card-face-back bg-gradient-to-br ${deck.bgGradient}`;
             
@@ -735,7 +866,6 @@
                 return;
             }
             
-            // Prendre la première carte de la file d'attente
             currentCardIndex = studyQueue.shift();
             document.getElementById('cards-remaining-display').innerText = studyQueue.length + 1;
             
@@ -750,6 +880,16 @@
                 isFlipped = false;
             }
             document.getElementById('hint-box').classList.remove('show');
+
+            // Affichage du score de difficulté
+            const score = getCardScore(currentDeckId, index);
+            const badge = document.getElementById('difficulty-badge');
+            if (score >= 2) {
+                badge.classList.remove('hidden');
+                // Optionnel : afficher le chiffre exact `Difficile (${score})`
+            } else {
+                badge.classList.add('hidden');
+            }
 
             setTimeout(() => {
                 const card = deck.cards[index];
@@ -779,18 +919,41 @@
             document.getElementById('hint-box').classList.toggle('show');
         }
 
-        function markKnown() {
-            decks[currentDeckId].known.add(currentCardIndex);
+        function markReview() {
+            // Incrémente le score de difficulté de manière permanente (Max géré par la base de données)
+            updateCardScore(currentDeckId, currentCardIndex, 1);
+            
+            decks[currentDeckId].known.delete(currentCardIndex);
+            
+            // RÉINJECTION INTELLIGENTE : La carte ne part pas à la fin !
+            // Elle est réinsérée aléatoirement dans les 2 à 4 prochaines cartes.
+            const offset = Math.floor(Math.random() * 3) + 2; 
+            const insertIndex = Math.min(studyQueue.length, offset);
+            studyQueue.splice(insertIndex, 0, currentCardIndex);
+            
+            saveProgress();
             updateProgress();
             loadNextCardInQueue();
         }
 
-        function markReview() {
-            decks[currentDeckId].known.delete(currentCardIndex);
-            // Logique ANKI : on remet la carte ratée à la fin de la file d'attente !
-            studyQueue.push(currentCardIndex);
+        function markKnown() {
+            // Diminue le score de difficulté car on a réussi
+            updateCardScore(currentDeckId, currentCardIndex, -1);
+            
+            decks[currentDeckId].known.add(currentCardIndex);
+            saveProgress();
             updateProgress();
             loadNextCardInQueue();
+        }
+
+        function hardResetDeck() {
+            if (confirm("Êtes-vous sûr de vouloir remettre la progression de ce paquet à 0 ?")) {
+                decks[currentDeckId].known.clear();
+                saveProgress();
+                endScreenEl.classList.add('hidden');
+                endScreenEl.classList.remove('flex');
+                selectDeck(currentDeckId);
+            }
         }
 
         function updateProgress() {
@@ -809,12 +972,6 @@
             }
         }
 
-        function resetSession() {
-            selectDeck(currentDeckId);
-            endScreenEl.classList.add('hidden');
-            endScreenEl.classList.remove('flex');
-        }
-
         document.addEventListener('keydown', (e) => {
             if (currentDeckId && endScreenEl.classList.contains('hidden') && !mainMenuEl.classList.contains('hidden') === false && colloscopeAreaEl.classList.contains('hidden')) {
                 if (e.code === 'Space') { 
@@ -825,6 +982,11 @@
                 else if (e.code === 'ArrowLeft') markReview();
             }
         });
+
+        // Register PWA Service Worker (if implemented later)
+        if ('serviceWorker' in navigator) {
+            // Intégration future
+        }
 
         window.addEventListener('DOMContentLoaded', initApp);
     </script>
