@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kholles App & Colloscope - ATS</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            overflow-x: hidden;
+        }
+
+        /* 3D Flip Card Styles */
+        .scene {
+            width: 100%;
+            height: 450px;
+            perspective: 1000px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Front specific */
+        .card-face-front {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #334155;
+        }
+
+        /* Back specific (will be overridden by JS colors) */
+        .card-face-back {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            transform: rotateY(180deg);
+            color: white;
+            border: 1px solid #2563eb;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .scene { height: 420px; }
+            .card-face { padding: 1.5rem; }
+        }
+
+        /* Hint transition */
+        .hint-container {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .hint-container.show {
+            max-height: 250px;
+            opacity: 1;
+            margin-top: 1rem;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <header class="p-4 sm:p-6 bg-slate-900 border-b border-slate-800 shadow-sm z-10 sticky top-0">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 flex items-center cursor-pointer" onclick="showMainMenu()">
+                <i class="fa-solid fa-graduation-cap text-indigo-400 mr-2"></i> Khôlles ATS
+            </h1>
+            
+            <button id="back-btn" onclick="showMainMenu()" class="hidden text-sm font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg transition-colors shadow">
+                <i class="fa-solid fa-house sm:mr-1"></i> <span class="hidden sm:inline">Menu Principal</span>
+            </button>
+        </div>
+        
+        <!-- Progress bar (hidden on home page) -->
+        <div id="progress-container" class="max-w-4xl mx-auto mt-4 hidden">
+            <div class="flex justify-between text-xs text-slate-400 mb-2 font-medium">
+                <span id="current-deck-name">Matière</span>
+                <span id="progress-text">0 / 0</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-2.5 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex flex-col items-center justify-start p-4 w-full max-w-4xl mx-auto pt-8">
+        
+        <!-- MAIN MENU -->
+        <div id="main-menu" class="w-full fade-in">
+            <div id="colloscope-btn-container" class="mb-8">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center"><i class="fa-solid fa-layer-group text-blue-400 mr-3"></i> Outils & Révisions</h2>
+                <div class="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
+                    <!-- Colloscope Button -->
+                    <div onclick="showColloscope()" class="bg-gradient-to-br from-indigo-900 to-slate-800 border border-indigo-500/30 hover:border-indigo-400 rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/20 group relative overflow-hidden sm:col-span-2">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500 opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
+                        <div class="flex items-center gap-5">
+                            <div class="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/50 shadow-inner">
+                                <i class="fa-regular fa-calendar-check text-indigo-400 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-indigo-300 text-xs font-bold uppercase tracking-wider mb-1">Emploi du temps</h3>
+                                <h2 class="text-white font-bold text-xl leading-tight">Mon Colloscope Personnalisé</h2>
+                                <p class="text-slate-400 text-sm mt-1">Sélectionnez votre groupe et trouvez vos khôlles de la semaine.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BREADCRUMBS -->
+            <div id="nav-breadcrumbs" class="flex items-center gap-2 text-sm text-slate-400 mb-6 hidden bg-slate-800/50 w-max px-4 py-2 rounded-lg border border-slate-700 shadow-sm">
+                <button onclick="renderRootFolders()" class="hover:text-white transition-colors flex items-center"><i class="fa-solid fa-home mr-2"></i> Accueil</button>
+                <span id="breadcrumb-subject" class="hidden flex items-center"> <i class="fa-solid fa-chevron-right text-xs mx-2 opacity-50"></i> <button onclick="renderFolder(currentSubject)" class="hover:text-white transition-colors font-medium text-slate-300" id="breadcrumb-subject-text">Matière</button></span>
+            </div>
+
+            <h2 id="library-title" class="text-2xl font-bold text-white mb-6 flex items-center"><i class="fa-solid fa-folder-tree text-emerald-400 mr-3"></i> Bibliothèque de Flashcards</h2>
+            
+            <div id="deck-selection" class="w-full grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                <!-- Dynamically populated by JS -->
+            </div>
+        </div>
+
+        <!-- COLLOSCOPE AREA -->
+        <div id="colloscope-area" class="w-full hidden fade-in">
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl mb-6">
+                <div class="flex flex-col sm:flex-row gap-4 items-end">
+                    <div class="w-full sm:w-1/2">
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Votre Groupe de Khôlle</label>
+                        <select id="group-select" onchange="renderSchedule()" class="w-full bg-slate-900 border border-slate-600 text-white text-lg rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 outline-none">
+                            <option value="1">Groupe 1</option>
+                            <option value="2">Groupe 2</option>
+                            <option value="3">Groupe 3</option>
+                            <option value="4">Groupe 4</option>
+                            <option value="5">Groupe 5</option>
+                            <option value="6">Groupe 6</option>
+                            <option value="7">Groupe 7</option>
+                            <option value="8">Groupe 8</option>
+                            <option value="9">Groupe 9</option>
+                            <option value="10">Groupe 10</option>
+                            <option value="11">Groupe 11</option>
+                            <option value="12">Groupe 12</option>
+                            <option value="13">Groupe 13</option>
+                            <option value="14">Groupe 14</option>
+                            <option value="15">Groupe 15</option>
+                        </select>
+                    </div>
+                    <div class="w-full sm:w-1/2">
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Semaine du</label>
+                        <select id="week-select" onchange="renderSchedule()" class="w-full bg-slate-900 border border-slate-600 text-white text-lg rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3 outline-none">
+                            <option value="0">Semaine 1 (14 Sept)</option>
+                            <option value="1">Semaine 2 (21 Sept)</option>
+                            <option value="2">Semaine 3 (28 Sept)</option>
+                            <option value="3">Semaine 4 (05 Oct)</option>
+                            <option value="4">Semaine 5 (12 Oct)</option>
+                            <option value="5">Semaine 6 (02 Nov)</option>
+                            <option value="6">Semaine 7 (09 Nov)</option>
+                            <option value="7">Semaine 8 (16 Nov)</option>
+                            <option value="8">Semaine 9 (23 Nov)</option>
+                            <option value="9">Semaine 10 (30 Nov)</option>
+                            <option value="10">Semaine 11 (07 Déc)</option>
+                            <option value="11">Semaine 12 (14 Déc)</option>
+                            <option value="12">Semaine 13 (04 Janv)</option>
+                            <option value="13">Semaine 14 (11 Janv)</option>
+                            <option value="14">Semaine 15 (25 Janv)</option>
+                            <option value="15">Semaine 16 (01 Févr)</option>
+                            <option value="16">Semaine 17 (08 Févr)</option>
+                            <option value="17">Semaine 18 (15 Févr)</option>
+                            <option value="18">Semaine 19 (08 Mars)</option>
+                            <option value="19">Semaine 20 (15 Mars)</option>
+                            <option value="20">Semaine 21 (22 Mars)</option>
+                            <option value="21">Semaine 22 (29 Mars)</option>
+                            <option value="22">Semaine 23 (5 Mai)</option>
+                            <option value="23">Semaine 24 (12 Mai)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Vos Khôlles programmées :</h3>
+            <div id="schedule-results" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Schedule cards injected here -->
+            </div>
+        </div>
+
+        <!-- SCORE SCREEN -->
+        <div id="end-screen" class="hidden w-full text-center py-12 flex-col items-center">
+            <div class="w-24 h-24 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center text-4xl mb-6 mx-auto">
+                <i class="fa-solid fa-check-double"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-white mb-4">Session terminée !</h2>
+            <p class="text-slate-300 mb-8">Vous avez maîtrisé toutes les cartes de ce paquet.</p>
+            <div class="flex gap-4">
+                <button onclick="resetSession()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition-colors">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> Refaire
+                </button>
+                <button onclick="showMainMenu()" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-list mr-2"></i> Menu
+                </button>
+            </div>
+        </div>
+
+        <!-- FLASHCARD AREA -->
+        <div id="flashcard-area" class="w-full hidden">
+            
+            <div class="text-center mb-4 text-sm text-slate-400 font-medium">
+                Cartes à réviser dans la session : <span id="cards-remaining-display">0</span>
+            </div>
+
+            <div class="scene mb-6">
+                <div class="card" id="flashcard" onclick="flipCard()">
+                    <!-- Front -->
+                    <div class="card-face card-face-front">
+                        <div class="text-center w-full max-h-full overflow-y-auto px-2">
+                            <i id="card-icon" class="fa-regular fa-circle-question text-3xl mb-4 opacity-50"></i>
+                            <h2 id="card-front-text" class="text-xl sm:text-2xl md:text-3xl font-semibold leading-tight text-white">
+                                <!-- Front text -->
+                            </h2>
+                        </div>
+                        <div class="absolute bottom-4 text-xs text-slate-500 uppercase tracking-widest font-semibold flex items-center bg-slate-900/50 px-3 py-1 rounded-full">
+                            <i class="fa-solid fa-hand-pointer mr-2"></i> Appuyez pour retourner
+                        </div>
+                    </div>
+                    
+                    <!-- Back -->
+                    <div class="card-face card-face-back" id="card-back-bg">
+                        <div class="text-center w-full max-h-full overflow-y-auto px-2 pb-10">
+                            <div class="text-white/70 text-sm font-semibold uppercase tracking-wider mb-3">Réponse</div>
+                            <div id="card-back-text" class="text-base sm:text-lg md:text-xl leading-relaxed font-medium">
+                                <!-- Back text -->
+                            </div>
+                            
+                            <!-- Hint Section -->
+                            <div class="hint-container bg-white/10 rounded-lg p-3 mt-4" id="hint-box">
+                                <div class="text-yellow-300 text-xs font-bold uppercase tracking-wider mb-1"><i class="fa-solid fa-lightbulb mr-1"></i> Astuce / Précision</div>
+                                <div id="card-hint-text" class="text-sm text-white/90 italic"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="absolute bottom-4 right-4">
+                            <button onclick="toggleHint(event)" class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors backdrop-blur-sm shadow" title="Afficher l'indice">
+                                <i class="fa-solid fa-lightbulb text-white"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTRÔLES DES FLASHCARDS -->
+            <div class="flex justify-center items-center gap-2 sm:gap-4 mt-2 sm:mt-8 w-full max-w-md mx-auto pb-8">
+                <button onclick="markReview()" class="flex-1 py-3 bg-rose-900/40 hover:bg-rose-900/60 text-rose-400 border border-rose-500/30 rounded-xl font-semibold transition-colors shadow-lg flex items-center justify-center" title="Raccourci : Flèche Gauche">
+                    <i class="fa-solid fa-xmark mr-2"></i> À revoir
+                </button>
+                
+                <button onclick="markKnown()" class="flex-1 py-3 bg-emerald-900/40 hover:bg-emerald-900/60 text-emerald-400 border border-emerald-500/30 rounded-xl font-semibold transition-colors shadow-lg flex items-center justify-center" title="Raccourci : Flèche Droite">
+                    <i class="fa-solid fa-check-double mr-2"></i> Acquis
+                </button>
+            </div>
+        </div>
+    </main>
+
+        <!-- MAIN APP LOGIC -->
+    <script>
+        // --- DONNÉES DU COLLOSCOPE (Année complète) ---
+        const colloscopeData = [
+            // Maths
+            { subject: "Maths", prof: "M. Devalland", room: "403", time: "Ven 16h45-17h40", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["11", "6", "1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "3", "14", "9", "4"] },
+            { subject: "Maths", prof: "M. Maurel", room: "401", time: "Mer 13h25-14h20", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["4", "13", "6", "1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "15", "7", "2", "13", "8", "3", "14", "9"] },
+            { subject: "Maths", prof: "M. Maurel", room: "401", time: "Mer 14h25-15h20", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["9", "4", "11", "10", "5", "11", "6", "1", "13", "8", "5", "11", "6", "4", "11", "6", "1", "15", "7", "5", "11", "6", "1", "12"] },
+            { subject: "Maths", prof: "Mme Hali", room: "401", time: "Mer 16h25-17h20", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["13", "10", "5", "15", "6", "1", "11", "6", "1", "12", "10", "5", "11", "6", "1", "14", "6", "1", "15", "10", "5", "11", "6", "1"] },
+            { subject: "Maths", prof: "Mme Hali", room: "401", time: "Mer 17h20-18h15", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["14", "9", "4", "11", "10", "5", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "3"] },
+            { subject: "Maths", prof: "M. Capelle", room: "405", time: "Mer 12h05-13h00", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["2", "15", "10", "5", "14", "9", "4", "11", "6", "1", "12", "7", "2", "11", "6", "1", "12", "9", "4", "15", "10", "5", "12", "7"] },
+            { subject: "Maths", prof: "M. Capelle", room: "405", time: "Mer 13h00-13h55", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["5", "11", "8", "3", "11", "6", "1", "15", "10", "5", "11", "6", "1", "13", "8", "3", "14", "10", "5", "11", "6", "1", "15", "10"] },
+            { subject: "Maths", prof: "M. Devalland", room: "401", time: "Ven 15h50-16h45", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["6", "1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "3", "14", "9", "4", "11"] },
+            { subject: "Maths", prof: "M. Devalland", room: "401", time: "Ven 16h45-17h40", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["15", "7", "2", "13", "8", "3", "14", "9", "4", "11", "6", "1", "12", "7", "2", "11", "8", "3", "14", "9", "4", "15", "10", "5"] },
+            { subject: "Maths", prof: "M. Lavatran", room: "Expo", time: "Lun 14h55-15h50", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["12", "8", "3", "14", "9", "4", "15", "10", "5", "15", "7", "2", "13", "8", "3", "13", "9", "4", "11", "6", "1", "12", "7", "2"] },
+            { subject: "Maths", prof: "Mme Denis", room: "403", time: "Mer 14h25-15h20", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["10", "5", "15", "6", "1", "12", "7", "2", "15", "10", "3", "14", "9", "1", "15", "10", "5", "12", "10", "2", "13", "8", "3", "14"] },
+            { subject: "Maths", prof: "M. Mochalinck", room: "403", time: "Mar 15h55-16h50", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "3", "7", "9", "13", "8", "3", "12", "9", "4", "11", "6"] },
+            { subject: "Maths", prof: "M. Mochalinck", room: "403", time: "Mar 16h50-17h45", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["8", "3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "12", "14", "2", "4", "11", "6", "1", "12", "7", "2", "15"] },
+            { subject: "Maths", prof: "M. Hédier", room: "324", time: "Lun 15h55-16h50", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["7", "2", "13", "8", "3", "14", "9", "4", "11", "6", "1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "13"] },
+            { subject: "Maths", prof: "M. Hédier", room: "324", time: "Lun 16h50-17h45", icon: "fa-calculator", color: "text-blue-400", bg: "bg-blue-900/30", border: "border-blue-500/30", groups: ["3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "3", "14", "9", "4", "11", "6", "1", "14", "7", "2", "13", "8"] },
+            
+            // Physique
+            { subject: "Physique", prof: "M. Tolitchka", room: "420", time: "Lun 14h55-15h50", icon: "fa-bolt", color: "text-yellow-400", bg: "bg-yellow-900/30", border: "border-yellow-500/30", groups: ["3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "3", "14", "9", "4", "11", "6", "1", "12", "7", "2", "13", "8"] },
+            { subject: "Physique", prof: "M. Tolitchka", room: "420", time: "Lun 15h55-16h50", icon: "fa-bolt", color: "text-yellow-400", bg: "bg-yellow-900/30", border: "border-yellow-500/30", groups: ["9", "4", "15", "10", "5", "-", "7", "13", "8", "3", "14", "9", "4", "15", "10", "5", "-", "-", "7", "2", "13", "8", "3", "14"] },
+            { subject: "Physique", prof: "M. Héraut", room: "120", time: "Mar 15h55-16h50", icon: "fa-bolt", color: "text-yellow-400", bg: "bg-yellow-900/30", border: "border-yellow-500/30", groups: ["11", "6", "1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "6", "7", "2", "13", "8", "3", "14", "9", "4"] },
+            { subject: "Physique", prof: "M. Denis", room: "401", time: "Mar 15h55-16h50", icon: "fa-bolt", color: "text-yellow-400", bg: "bg-yellow-900/30", border: "border-yellow-500/30", groups: ["15", "10", "5", "-", "11", "6", "1", "2", "15", "10", "5", "-", "11", "6", "1", "12", "15", "10", "5", "-", "11", "6", "1", "12"] },
+            { subject: "Physique", prof: "M. Duprès", room: "401", time: "Jeu 17h30-18h25", icon: "fa-bolt", color: "text-yellow-400", bg: "bg-yellow-900/30", border: "border-yellow-500/30", groups: ["13", "8", "3", "14", "9", "4", "15", "10", "5", "-", "7", "2", "13", "8", "3", "14", "9", "4", "11", "6", "1", "12", "7", "2"] },
+            { subject: "Physique", prof: "M. Lecoq", room: "401", time: "Mar 15h55-16h50", icon: "fa-bolt", color: "text-yellow-400", bg: "bg-yellow-900/30", border: "border-yellow-500/30", groups: ["7", "2", "13", "8", "3", "14", "9", "4", "11", "6", "1", "6", "1", "12", "11", "2", "1", "12", "15", "4", "15", "10", "15", "10"] },
+            { subject: "Physique", prof: "M. Lecoq", room: "401", time: "Mar 16h50-17h45", icon: "fa-bolt", color: "text-yellow-400", bg: "bg-yellow-900/30", border: "border-yellow-500/30", groups: ["5", "-", "11", "6", "1", "12", "11", "6", "1", "12", "15", "10", "7", "2", "13", "8", "3", "14", "9", "10", "5", "4", "5", "-"] },
+            { subject: "Physique", prof: "M. Héraut", room: "120", time: "Mar 16h50-17h45", icon: "fa-bolt", color: "text-yellow-400", bg: "bg-yellow-900/30", border: "border-yellow-500/30", groups: ["1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "11", "12", "5", "-", "7", "-", "13", "8", "3", "14", "9", "-", "11", "6"] },
+
+            // Anglais
+            { subject: "Anglais", prof: "Mme Agoutin", room: "409+412", time: "Ven 16h05-17h25", icon: "fa-language", color: "text-purple-400", bg: "bg-purple-900/30", border: "border-purple-500/30", groups: ["4", "11", "6", "1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "14", "7", "2", "13", "8", "3", "14", "9"] },
+            { subject: "Anglais", prof: "Mme Paret", room: "412+416", time: "Mer 14h30-15h50", icon: "fa-language", color: "text-purple-400", bg: "bg-purple-900/30", border: "border-purple-500/30", groups: ["6", "1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "3", "14", "9", "4", "11"] },
+            { subject: "Anglais", prof: "Mme Pugh", room: "305+307", time: "Mer 16h30-17h50", icon: "fa-language", color: "text-purple-400", bg: "bg-purple-900/30", border: "border-purple-500/30", groups: ["12", "7", "2", "13", "8", "3", "14", "9", "4", "11", "6", "1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5"] },
+            { subject: "Anglais", prof: "Mme Pugh", room: "305+307", time: "Mer 17h30-18h50", icon: "fa-language", color: "text-purple-400", bg: "bg-purple-900/30", border: "border-purple-500/30", groups: ["2", "13", "10", "3", "6", "9", "4", "15", "10", "5", "12", "11", "6", "13", "8", "3", "6", "9", "4", "11", "6", "1", "12", "7"] },
+            { subject: "Anglais", prof: "M. Delalande", room: "410+409", time: "Mer 14h30-15h50", icon: "fa-language", color: "text-purple-400", bg: "bg-purple-900/30", border: "border-purple-500/30", groups: ["8", "3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "3", "14", "9", "4", "11", "6", "1", "12", "7", "2", "13"] },
+            { subject: "Anglais", prof: "M. Delalande", room: "410+409", time: "Mer 16h00-17h20", icon: "fa-language", color: "text-purple-400", bg: "bg-purple-900/30", border: "border-purple-500/30", groups: ["14", "9", "4", "11", "10", "5", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "3"] },
+            { subject: "Anglais", prof: "M. Thieury", room: "409+411", time: "Lun 17h15-18h35", icon: "fa-language", color: "text-purple-400", bg: "bg-purple-900/30", border: "border-purple-500/30", groups: ["10", "15", "8", "5", "14", "11", "6", "1", "6", "1", "10", "5", "2", "11", "6", "1", "12", "15", "10", "5", "10", "11", "6", "1"] },
+            { subject: "Anglais", prof: "Mme Ganoch", room: "420+417", time: "Mar 17h00-18h20", icon: "fa-language", color: "text-purple-400", bg: "bg-purple-900/30", border: "border-purple-500/30", groups: ["-", "5", "-", "15", "-", "1", "-", "11", "-", "15", "-", "7", "-", "1", "-", "11", "-", "1", "-", "15", "-", "5", "-", "3"] },
+
+            // Mécanique
+            { subject: "Méca", prof: "M. Pigny", room: "93", time: "Mer 13h20-14h15", icon: "fa-wrench", color: "text-orange-400", bg: "bg-orange-900/30", border: "border-orange-500/30", groups: ["3", "14", "9", "4", "15", "10", "5", "-", "7", "2", "13", "8", "3", "14", "9", "4", "11", "6", "1", "12", "7", "2", "13", "8"] },
+            { subject: "Méca", prof: "M. Pigny", room: "93", time: "Mer 14h25-15h20", icon: "fa-wrench", color: "text-orange-400", bg: "bg-orange-900/30", border: "border-orange-500/30", groups: ["7", "2", "13", "8", "3", "14", "9", "4", "11", "6", "1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "-"] },
+            { subject: "Méca", prof: "M. Olivier", room: "78", time: "Lun 14h55-15h50", icon: "fa-wrench", color: "text-orange-400", bg: "bg-orange-900/30", border: "border-orange-500/30", groups: ["11", "6", "1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "3", "14", "9", "4"] },
+            { subject: "Méca", prof: "M. Olivier", room: "78", time: "Lun 15h55-16h50", icon: "fa-wrench", color: "text-orange-400", bg: "bg-orange-900/30", border: "border-orange-500/30", groups: ["15", "10", "5", "-", "11", "6", "1", "12", "15", "10", "5", "-", "11", "6", "1", "-", "15", "10", "5", "-", "11", "6", "1", "12"] },
+
+            // Elec / TP
+            { subject: "Elec", prof: "M. Lemesle", room: "155", time: "Lun 16h50-17h45", icon: "fa-desktop", color: "text-emerald-400", bg: "bg-emerald-900/30", border: "border-emerald-500/30", groups: ["13", "8", "3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "3", "14", "9", "4", "11", "6", "1", "12", "7", "2"] },
+            { subject: "Elec", prof: "M. Lemesle", room: "155", time: "Lun 17h45-18h40", icon: "fa-desktop", color: "text-emerald-400", bg: "bg-emerald-900/30", border: "border-emerald-500/30", groups: ["9", "4", "15", "10", "5", "-", "11", "6", "1", "-", "11", "6", "1", "-", "11", "6", "1", "-", "7", "2", "13", "-", "15", "10"] },
+            { subject: "Elec", prof: "M. Poulet", room: "93", time: "Lun 16h50-17h45", icon: "fa-desktop", color: "text-emerald-400", bg: "bg-emerald-900/30", border: "border-emerald-500/30", groups: ["5", "-", "11", "6", "1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "12", "15", "10", "5", "8", "3", "14"] },
+            { subject: "Elec", prof: "M. Poulet", room: "79", time: "Mer 12h00-12h55", icon: "fa-desktop", color: "text-emerald-400", bg: "bg-emerald-900/30", border: "border-emerald-500/30", groups: ["1", "12", "7", "2", "13", "8", "3", "14", "9", "4", "15", "10", "5", "12", "7", "2", "13", "8", "3", "14", "9", "4", "11", "6"] },
+            // TP Info
+            { subject: "TP Info", prof: "M. Poulet", room: "93", time: "Lun 14h55-15h50", icon: "fa-laptop-code", color: "text-emerald-400", bg: "bg-emerald-900/30", border: "border-emerald-500/30", groups: ["6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15"] },
+            { subject: "TP Info", prof: "M. Devalland", room: "410", time: "Ven 15h50-16h45", icon: "fa-laptop-code", color: "text-emerald-400", bg: "bg-emerald-900/30", border: "border-emerald-500/30", groups: ["11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5"] },
+            { subject: "TP Info", prof: "M. Poulet", room: "93", time: "Lun 15h50-16h45", icon: "fa-laptop-code", color: "text-emerald-400", bg: "bg-emerald-900/30", border: "border-emerald-500/30", groups: ["1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10", "1,2,3,4,5", "11,12,13,14,15", "6,7,8,9,10"] },
+
+            // Français
+            { subject: "Français", prof: "Mme Plassart", room: "312", time: "Ven 16h00-17h30", icon: "fa-book-open", color: "text-rose-400", bg: "bg-rose-900/30", border: "border-rose-500/30", groups: ["-", "-", "1", "12", "7", "2", "11", "6", "3", "14", "9", "4", "15", "10", "1", "13", "8", "3", "11", "6", "-", "5", "12", "7", "2", "13", "8"] },
+            { subject: "Français", prof: "Mme Plassart", room: "312", time: "Ven 17h30-18h00", icon: "fa-book-open", color: "text-rose-400", bg: "bg-rose-900/30", border: "border-rose-500/30", groups: ["-", "-", "5.1", "15.1", "10.1", "5.2", "15.2", "10.2", "5.3", "-", "-", "-", "-", "14.1", "9.1", "4.1", "14.2", "9.2", "-", "4.2", "14.3", "9.3", "4.3", "15.3", "10.3"] }
+        ];
+
+        const physiqueCards = [
+            { front: "Expression du vecteur position en coordonnées cartésiennes", back: "$$\\vec{OM} = x\\cdot\\vec{u}_x + y\\cdot\\vec{u}_y + z\\cdot\\vec{u}_z$$ (en mètres, m).", hint: "Pensez aux 3 axes de l'espace (x, y, z) et à leurs vecteurs unitaires." },
+            { front: "Expression du vecteur vitesse instantanée en coordonnées cartésiennes", back: "$$\\vec{v}_{M/R} = \\left(\\frac{d\\vec{OM}}{dt}\\right)_R = \\dot{x}\\cdot\\vec{u}_x + \\dot{y}\\cdot\\vec{u}_y + \\dot{z}\\cdot\\vec{u}_z$$ (en $m.s^{-1}$).", hint: "Dérivée première du vecteur position par rapport au temps." },
+            { front: "Expression du vecteur accélération en coordonnées cartésiennes", back: "$$\\vec{a}_{M/R} = \\left(\\frac{d\\vec{v}}{dt}\\right)_R = \\ddot{x}\\cdot\\vec{u}_x + \\ddot{y}\\cdot\\vec{u}_y + \\ddot{z}\\cdot\\vec{u}_z$$ (en $m.s^{-2}$).", hint: "Dérivée seconde du vecteur position." },
+            { front: "Vitesse moyenne et accélération moyenne (mouvement unidirectionnel)", back: "Vitesse moyenne : $$v_{MOY} = \\frac{\\Delta x}{\\Delta t}$$ ($m.s^{-1}$)<br><br>Accélération moyenne : $$a_{MOY} = \\frac{\\Delta v}{\\Delta t}$$ ($m.s^{-2}$)", hint: "C'est un taux d'accroissement sur un intervalle $\\Delta t$." },
+            { front: "Principe Fondamental de la Dynamique (PFD)", back: "Dans un référentiel galiléen : $$\\sum\\vec{F}_{ext} = \\frac{d\\vec{p}_{M/R}}{dt} = m\\cdot\\vec{a}_{M/R}$$", hint: "C'est la deuxième loi de Newton." },
+            { front: "Force d'interaction gravitationnelle (A sur B)", back: "$$\\vec{F}_{A \\rightarrow B} = -G\\frac{m_A m_B}{r^2}\\vec{u}_{A \\rightarrow B}$$", hint: "G constante de gravitation, $r$ distance AB." },
+            { front: "Force de rappel élastique d'un ressort", back: "$$\\vec{T} = -k(l-l_0)\\vec{u}_{sortant}$$", hint: "$k$ est la raideur ($N.m^{-1}$), $l-l_0$ l'allongement." },
+            { front: "Équations horaires du MRUA", back: "Accélération $a(t)=a_0$<br>Vitesse $v(t) = a_0t + v_0$<br>Position $x(t) = \\frac{1}{2}a_0t^2 + v_0t + x_0$", hint: "Polynôme du second degré pour la position." },
+            { front: "Travail et Puissance d'une force", back: "Travail : $$\\delta W(\\vec{F}) = \\vec{F}\\cdot d\\vec{M}$$ (en Joules)<br>Puissance : $$P(\\vec{F}) = \\vec{F}\\cdot\\vec{v}$$ (en Watts)", hint: "Produit scalaire avec le déplacement / avec la vitesse." },
+            { front: "Démonstration du Théorème de l'Énergie Cinétique (TEC)", back: "PFD : $m\\frac{d\\vec{v}}{dt} = \\sum\\vec{F}_i$<br>On multiplie par $\\vec{v}$ : $m\\vec{v}\\cdot\\frac{d\\vec{v}}{dt} = \\sum\\vec{F}_i\\cdot\\vec{v}$<br>$\\frac{d}{dt}(\\frac{1}{2}mv^2) = \\sum P(\\vec{F}_i)$<br>En intégrant sur $dt$ : $\\Delta E_c = \\sum W_{A\\rightarrow B}$", hint: "L'astuce clé est de multiplier scalairement le PFD par le vecteur vitesse $\\vec{v}$." },
+            { front: "Énergie Potentielle de Pesanteur (Conventions de signe)", back: "Axe vertical orienté vers le **haut** : $E_{pp} = +mgz + Cte$<br><br>Axe vertical orienté vers le **bas** : $E_{pp} = -mgz + Cte$", hint: "Dépend de l'orientation de l'axe z choisi." },
+            { front: "Théorème de l'Énergie Mécanique (TEM)", back: "$$\\frac{dE_m}{dt} = \\sum P(\\vec{F}_{non\\_conservative})$$", hint: "S'il n'y a que des forces conservatives, $E_m$ se conserve." },
+            { front: "Positions d'équilibre stable et instable", back: "Stable : $\\frac{dE_p}{dx}=0$ et $\\frac{d^2E_p}{dx^2} > 0$ (minimum d'énergie).<br><br>Instable : $\\frac{dE_p}{dx}=0$ et $\\frac{d^2E_p}{dx^2} < 0$ (maximum d'énergie).", hint: "Pensez au fond d'une cuvette (stable) ou au sommet d'une bosse (instable)." },
+            { front: "Méthodologie : BAME et PFD (Palet sur glace tiré par une force F)", back: "1. BAME : $\\vec{P} = -mg\\vec{u}_z$, $\\vec{N} = N\\vec{u}_z$, $\\vec{F} = F\\vec{u}_x$<br>2. PFD : $\\vec{P} + \\vec{N} + \\vec{F} = m\\vec{a}$<br>3. Proj sur x : $F = m\\ddot{x} \\implies \\ddot{x} = F/m$", hint: "Mouvement unidirectionnel, le poids et la réaction s'annulent." },
+            { front: "Équations horaires : Chute libre balistique (angle $\\alpha$)", back: "CI : $v_{0x} = v_0\\cos\\alpha$, $v_{0z} = v_0\\sin\\alpha$<br>Accélération : $\\ddot{x}=0$, $\\ddot{z}=-g$<br>Vitesse : $\\dot{x}=v_0\\cos\\alpha$, $\\dot{z}=-gt + v_0\\sin\\alpha$<br>Position : $x(t)=(v_0\\cos\\alpha)t$, $z(t)=-\\frac{1}{2}gt^2+(v_0\\sin\\alpha)t$", hint: "Projeter le vecteur vitesse initiale avec la trigonométrie." },
+            { front: "Équilibre d'un système masse-ressort vertical ($z_{eq}$)", back: "BAME : $\\vec{P}=mg\\vec{u}_z$ et $\\vec{T}=-k(z-l_0)\\vec{u}_z$<br>À l'équilibre (PFS) : $\\sum\\vec{F} = \\vec{0} \\implies mg - k(z_{eq}-l_0) = 0$<br>$$z_{eq} = l_0 + \\frac{mg}{k}$$", hint: "Cohérence : si $m$ augmente, $z_{eq}$ augmente. Si $k$ augmente, $z_{eq}$ diminue." },
+            { front: "Skieur glissant sans frottement d'une hauteur h (Vitesse finale ?)", back: "Conservation de $E_m$ (seul le poids travaille, $\\vec{N} \\perp \\vec{v}$).<br>$E_m(h) = E_m(0)$<br>$mgh + 0 = 0 + \\frac{1}{2}mv^2$<br>$$v = \\sqrt{2gh}$$", hint: "La vitesse finale est indépendante de la masse et de l'angle de la pente." },
+            { front: "Projections des vecteurs polaires $(\\vec{u}_r, \\vec{u}_\\theta)$ en cartésien", back: "$$\\vec{u}_r = \\cos(\\theta)\\vec{u}_x + \\sin(\\theta)\\vec{u}_y$$<br> $$\\vec{u}_\\theta = -\\sin(\\theta)\\vec{u}_x + \\cos(\\theta)\\vec{u}_y$$", hint: "Identique pour la base cylindrique (on ajoute juste $\\vec{u}_z$)." },
+            { front: "Relation vitesse et vitesse angulaire (Mvt circulaire)", back: "$$v = R \\cdot \\omega$$<br>avec $v$ en $m.s^{-1}$, $R$ en $m$, et $\\omega = \\dot{\\theta}$ en $rad.s^{-1}$.", hint: "La vitesse linéaire est proportionnelle au rayon et à la vitesse de rotation." },
+            { front: "Principe des actions réciproques (3ème Loi de Newton)", back: "Si un corps A exerce une force sur un corps B, alors B exerce sur A une force de même direction, de même norme, mais de **sens opposé** :<br>$$\\vec{F}_{A \\rightarrow B} = -\\vec{F}_{B \\rightarrow A}$$", hint: "Action = Réaction." }
+        ];
+
+        const mecaCards = [
+            { front: "Définition d'une Base Orthonormée Directe (B.O.N.)", back: "Une base $(\\vec{i}, \\vec{j}, \\vec{k})$ est orthonormée si ses vecteurs sont unitaires ($||\\vec{i}||=1$) et orthogonaux deux à deux.<br><br>Elle est *directe* si elle respecte la règle de la main droite : $$\\vec{i} \\wedge \\vec{j} = \\vec{k}$$", hint: "Indispensable pour l'orientation et le produit vectoriel." },
+            { front: "Relation de Chasles pour les angles orientés", back: "$$(\\vec{u}, \\vec{v}) + (\\vec{v}, \\vec{w}) = (\\vec{u}, \\vec{w}) \\pmod{2\\pi}$$", hint: "Permet de décomposer un angle." },
+            { front: "Composantes d'un vecteur $\\vec{V}$ avec un angle $\\theta$", back: "Si $\\vec{V}$ fait un angle $\\theta$ avec l'axe $\\vec{x}$ :<br>$$\\vec{V} = ||\\vec{V}|| \\cos(\\theta)\\cdot\\vec{i} + ||\\vec{V}|| \\sin(\\theta)\\cdot\\vec{j}$$", hint: "Le cosinus est toujours sur le côté adjacent à l'angle." },
+            { front: "Produit scalaire : Définition géométrique", back: "$$\\vec{u} \\cdot \\vec{v} = ||\\vec{u}|| \\times ||\\vec{v}|| \\times \\cos(\\vec{u}, \\vec{v})$$", hint: "Renvoie un nombre. Nul quand orthogonaux." },
+            { front: "Produit scalaire : Expression analytique", back: "Dans une B.O.N :<br>$$\\vec{u} \\cdot \\vec{v} = X X' + Y Y' + Z Z'$$", hint: "On multiplie les composantes et on somme." },
+            { front: "Produit vectoriel : Définition géométrique", back: "Le vecteur $\\vec{w} = \\vec{u} \\wedge \\vec{v}$ est orthogonal à $\\vec{u}$ et $\\vec{v}$, de sens direct, et de norme : $$||\\vec{w}|| = ||\\vec{u}|| \\times ||\\vec{v}|| \\times |\\sin(\\vec{u}, \\vec{v})|$$", hint: "Renvoie un vecteur. Nul quand colinéaires." },
+            { front: "Produit vectoriel : Expression analytique", back: "Dans une B.O.N directe :<br>$$\\begin{pmatrix} X \\\\ Y \\\\ Z \\end{pmatrix} \\wedge \\begin{pmatrix} X' \\\\ Y' \\\\ Z' \\end{pmatrix} = \\begin{pmatrix} Y Z' - Z Y' \\\\ Z X' - X Z' \\\\ X Y' - Y X' \\end{pmatrix}$$", hint: "Utilisez le produit en croix." }
+        ];
+
+        const mathCardsSemaine1 = [
+            { front: "Démonstration par contraposée : Principe", back: "Pour prouver que $P \\implies Q$, on démontre que :<br>$$\\text{non}(Q) \\implies \\text{non}(P)$$", hint: "L'absence de Q implique l'absence de P." },
+            { front: "Démonstration par l'absurde : Principe", back: "Pour prouver $P$, on **suppose que $P$ est fausse** ($\\text{non}(P)$).<br>On mène un raisonnement logique jusqu'à aboutir à une **contradiction**.", hint: "On démontre que l'inverse est impossible." },
+            { front: "Démonstration par récurrence : Les 3 étapes", back: "1. **Initialisation** : $P(n_0)$ est vraie.<br>2. **Hérédité** : On suppose $P(n)$ vraie, on prouve $P(n+1)$.<br>3. **Conclusion** : $P(n)$ vraie pour tout $n \\ge n_0$.", hint: "Le principe des dominos." },
+            { front: "Somme télescopique $\\sum$", back: "$$\\sum_{k=m}^{n} (a_{k+1} - a_k) = a_{n+1} - a_m$$", hint: "Tous les termes intermédiaires s'annulent." },
+            { front: "Expression de $\\binom{n}{p}$", back: "$$\\binom{n}{p} = \\frac{n!}{p!(n-p)!}$$", hint: "Nombre de façons de choisir p éléments parmi n." },
+            { front: "Formule de Pascal", back: "$$\\binom{n}{p} = \\binom{n-1}{p-1} + \\binom{n-1}{p}$$", hint: "Un élément est la somme de celui du dessus et de celui du dessus à gauche." },
+            { front: "Retrouver $\\binom{4}{2}$ avec Pascal", back: "L0: 1<br>L1: 1 - 1<br>L2: 1 - 2 - 1<br>L3: 1 - 3 - 3 - 1<br>L4: 1 - 4 - **6** - 4 - 1<br>$\\implies \\binom{4}{2} = 6$.", hint: "3ème colonne de la ligne 4." },
+            { front: "Binôme de Newton", back: "$$(a+b)^n = \\sum_{k=0}^{n} \\binom{n}{k} a^{n-k} b^k$$", hint: "Généralisation des identités remarquables." },
+            { front: "Développement de $(a-b)^5$", back: "Ligne 5: 1 - 5 - 10 - 10 - 5 - 1.<br>$$(a-b)^5 = a^5 - 5a^4b + 10a^3b^2 - 10a^2b^3 + 5ab^4 - b^5$$", hint: "Signes alternés." }
+        ];
+
+        const mathCardsMemento = [
+            { front: "Valeurs des coefficients $\\binom{n}{0}$, $\\binom{n}{1}$, $\\binom{n}{2}$", back: "$$\\binom{n}{0} = 1$$<br> $$\\binom{n}{1} = n$$<br> $$\\binom{n}{2} = \\frac{n(n-1)}{2}$$", hint: "Issu de votre Mémento manuscrit." },
+            { front: "Somme d'une suite arithmétique", back: "$$S = \\frac{\\text{nombre de termes}}{2} \\times (\\text{1er} + \\text{dernier})$$", hint: "Issu de votre Mémento manuscrit." },
+            { front: "Somme d'une suite géométrique", back: "$$S = \\text{1er terme} \\times \\frac{1 - q^{\\text{nombre de termes}}}{1 - q}$$", hint: "Issu de votre Mémento manuscrit." },
+            { front: "Identité trigonométrique", back: "$$\\cos^2(x) + \\sin^2(x) = 1$$", hint: "Issu de votre Mémento manuscrit." },
+            { front: "Addition Cosinus", back: "$$\\cos(a+b) = \\cos(a)\\cos(b) - \\sin(a)\\sin(b)$$<br>$$\\cos(a-b) = \\cos(a)\\cos(b) + \\sin(a)\\sin(b)$$", hint: "Issu de votre Mémento manuscrit." },
+            { front: "Addition Sinus", back: "$$\\sin(a+b) = \\sin(a)\\cos(b) + \\sin(b)\\cos(a)$$<br>$$\\sin(a-b) = \\sin(a)\\cos(b) - \\sin(b)\\cos(a)$$", hint: "Issu de votre Mémento manuscrit." },
+            { front: "Tableau des dérivées 1", back: "$$(x^n)' = n x^{n-1}$$<br>$$(\\sqrt{x})' = \\frac{1}{2\\sqrt{x}}$$<br>$$(\\ln x)' = \\frac{1}{x}$$<br>$$(e^x)' = e^x$$", hint: "Issu de votre Mémento manuscrit." },
+            { front: "Tableau des dérivées 2 (Trigo)", back: "$$(\\sin x)' = \\cos x$$<br>$$(\\cos x)' = -\\sin x$$<br>$$(\\tan x)' = 1 + \\tan^2 x = \\frac{1}{\\cos^2 x}$$", hint: "Issu de votre Mémento manuscrit." },
+            { front: "Opérations sur les dérivées", back: "$$(u \\cdot v)' = u'v + uv'$$<br>$$\\left(\\frac{u}{v}\\right)' = \\frac{u'v - uv'}{v^2}$$<br>$$(v \\circ u)' = u' \\times (v' \\circ u)$$", hint: "Issu de votre Mémento manuscrit." },
+            { front: "Primitives de formes $u'$", back: "$$\\int \\frac{u'}{u} dx = \\ln(|u|) + C$$<br>$$\\int \\frac{u'}{\\sqrt{u}} dx = 2\\sqrt{u} + C$$<br>$$\\int u'u^n dx = \\frac{u^{n+1}}{n+1} + C$$", hint: "Issu de votre Mémento manuscrit." }
+        ];
+
+        const decks = {
+            'physique_s1': { title: "M1 & M2 : Cinématique & Énergies", subject: "Physique", icon: "fa-bolt", color: "text-yellow-400", bgGradient: "from-yellow-500 to-orange-600", cards: physiqueCards, known: new Set() },
+            'mecanique_s1': { title: "Outils Maths (Vecteurs, Bases...)", subject: "Mécanique", icon: "fa-wrench", color: "text-orange-400", bgGradient: "from-orange-500 to-red-600", cards: mecaCards, known: new Set() },
+            'maths_s1': { title: "Semaine 1 (Démos, Sommes, Binôme)", subject: "Mathématiques", icon: "fa-calculator", color: "text-blue-400", bgGradient: "from-blue-500 to-indigo-600", cards: mathCardsSemaine1, known: new Set() },
+            'maths_memento': { title: "Mémento complet (Dérivées, Trigo...)", subject: "Mathématiques", icon: "fa-book-open", color: "text-indigo-300", bgGradient: "from-indigo-600 to-purple-700", cards: mathCardsMemento, known: new Set() }
+        };
+
+        const library = {
+            'maths': { 
+                title: 'Mathématiques', icon: 'fa-calculator', color: 'text-blue-400', bgGradient: 'from-blue-600 to-indigo-900', 
+                rootDecks: ['maths_memento'], 
+                weeks: { 's1': { title: 'Semaine 1 (14 Sept)', decks: ['maths_s1'] } } 
+            },
+            'physique': { 
+                title: 'Physique', icon: 'fa-bolt', color: 'text-yellow-400', bgGradient: 'from-yellow-600 to-orange-900', 
+                rootDecks: [], 
+                weeks: { 's1': { title: 'Semaine 1 (14 Sept)', decks: ['physique_s1'] } } 
+            },
+            'mecanique': { 
+                title: 'Mécanique', icon: 'fa-wrench', color: 'text-orange-400', bgGradient: 'from-orange-600 to-red-900', 
+                rootDecks: [], 
+                weeks: { 's1': { title: 'Semaine 1 (14 Sept)', decks: ['mecanique_s1'] } } 
+            },
+            'elec': { 
+                title: 'Élec', icon: 'fa-desktop', color: 'text-emerald-400', bgGradient: 'from-emerald-600 to-teal-900', 
+                rootDecks: [], 
+                weeks: {} 
+            }
+        };
+
+        let currentSubject = null;
+        let currentFolderWeek = null;
+        let currentDeckId = null;
+        let currentCardIndex = 0;
+        let isFlipped = false;
+        let studyQueue = [];
+        
+        // DOM Elements
+        const mainMenuEl = document.getElementById('main-menu');
+        const deckSelectionEl = document.getElementById('deck-selection');
+        const colloscopeAreaEl = document.getElementById('colloscope-area');
+        const scheduleResultsEl = document.getElementById('schedule-results');
+        const flashcardAreaEl = document.getElementById('flashcard-area');
+        const endScreenEl = document.getElementById('end-screen');
+        const backBtn = document.getElementById('back-btn');
+        const progressContainer = document.getElementById('progress-container');
+        
+        function initApp() {
+            renderRootFolders();
+            renderSchedule(); // Initialize colloscope list
+        }
+
+        function showMainMenu() {
+            currentDeckId = null;
+            mainMenuEl.classList.remove('hidden');
+            colloscopeAreaEl.classList.add('hidden');
+            flashcardAreaEl.classList.add('hidden');
+            endScreenEl.classList.add('hidden');
+            backBtn.classList.add('hidden');
+            progressContainer.classList.add('hidden');
+            
+            // Logique de retour "intelligent"
+            if (currentFolderWeek) {
+                renderWeek(currentSubject, currentFolderWeek);
+            } else if (currentSubject) {
+                renderFolder(currentSubject);
+            } else {
+                renderRootFolders();
+            }
+        }
+
+        function renderRootFolders() {
+            currentSubject = null;
+            currentFolderWeek = null;
+            document.getElementById('nav-breadcrumbs').classList.add('hidden');
+            document.getElementById('colloscope-btn-container').classList.remove('hidden');
+            document.getElementById('library-title').innerHTML = '<i class="fa-solid fa-folder-tree text-emerald-400 mr-3"></i> Bibliothèque de Flashcards';
+            
+            deckSelectionEl.innerHTML = '';
+            for (const [id, subject] of Object.entries(library)) {
+                let totalDecks = subject.rootDecks.length;
+                Object.values(subject.weeks).forEach(w => totalDecks += w.decks.length);
+                
+                deckSelectionEl.innerHTML += `
+                    <div onclick="renderFolder('${id}')" class="bg-slate-800 border border-slate-700 hover:border-slate-500 rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl group relative overflow-hidden flex flex-col h-full items-center text-center">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${subject.bgGradient} opacity-20 rounded-bl-full transition-transform group-hover:scale-110"></div>
+                        <div class="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center border border-slate-700 shadow-inner mb-4 z-10">
+                            <i class="fa-solid ${subject.icon} ${subject.color} text-3xl"></i>
+                        </div>
+                        <h2 class="text-white font-semibold text-xl leading-tight group-hover:text-white transition-colors z-10">${subject.title}</h2>
+                        <p class="text-slate-400 text-sm mt-2 z-10">${totalDecks} paquet(s) de révision</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderFolder(subjectId) {
+            currentSubject = subjectId;
+            currentFolderWeek = null;
+            const subject = library[subjectId];
+            
+            document.getElementById('nav-breadcrumbs').classList.remove('hidden');
+            document.getElementById('breadcrumb-subject').classList.add('hidden');
+            document.getElementById('colloscope-btn-container').classList.add('hidden');
+            document.getElementById('library-title').innerHTML = `<i class="fa-solid ${subject.icon} ${subject.color} mr-3"></i> Dossier : ${subject.title}`;
+            
+            deckSelectionEl.innerHTML = '';
+
+            // Paquets racine (Ex: Mémento, qui ne dépendent pas d'une semaine)
+            if (subject.rootDecks.length > 0) {
+                subject.rootDecks.forEach(deckId => {
+                    deckSelectionEl.innerHTML += createDeckHTML(deckId, true);
+                });
+            }
+
+            // Dossiers des semaines
+            const weekKeys = Object.keys(subject.weeks);
+            if (weekKeys.length > 0) {
+                weekKeys.forEach(weekId => {
+                    const weekData = subject.weeks[weekId];
+                    deckSelectionEl.innerHTML += `
+                        <div onclick="renderWeek('${subjectId}', '${weekId}')" class="bg-slate-800/80 border border-slate-700 hover:border-slate-500 rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl group relative overflow-hidden flex flex-col h-full justify-center items-center">
+                            <div class="w-12 h-12 rounded-xl bg-slate-700/50 flex items-center justify-center mb-3">
+                                <i class="fa-regular fa-calendar-check text-slate-300 text-xl group-hover:text-blue-400 transition-colors"></i>
+                            </div>
+                            <h3 class="text-white font-semibold text-lg text-center">${weekData.title}</h3>
+                            <p class="text-slate-400 text-sm text-center mt-1 flex items-center"><i class="fa-solid fa-layer-group mr-1.5 text-xs"></i> ${weekData.decks.length} paquet(s)</p>
+                        </div>
+                    `;
+                });
+            } else if (subject.rootDecks.length === 0) {
+                deckSelectionEl.innerHTML = `<div class="col-span-full text-center text-slate-500 py-8 italic">Aucun paquet disponible pour le moment dans ce dossier.</div>`;
+            }
+        }
+
+        function renderWeek(subjectId, weekId) {
+            currentSubject = subjectId;
+            currentFolderWeek = weekId;
+            const subject = library[subjectId];
+            const week = subject.weeks[weekId];
+            
+            document.getElementById('breadcrumb-subject').classList.remove('hidden');
+            document.getElementById('breadcrumb-subject-text').innerText = subject.title;
+            document.getElementById('library-title').innerHTML = `<i class="fa-regular fa-calendar-check text-slate-400 mr-3"></i> ${week.title}`;
+            
+            deckSelectionEl.innerHTML = '';
+            week.decks.forEach(deckId => {
+                deckSelectionEl.innerHTML += createDeckHTML(deckId, false);
+            });
+        }
+
+        function createDeckHTML(deckId, isRoot) {
+            const deck = decks[deckId];
+            const total = deck.cards.length;
+            const known = deck.known.size;
+            const progress = total > 0 ? Math.round((known / total) * 100) : 0;
+            // Un badge spécial "Transversal" pour le Mémento de Maths par exemple
+            const rootBadge = isRoot ? `<div class="absolute top-3 left-3 bg-indigo-900/60 border border-indigo-500/30 text-indigo-300 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded shadow-sm z-10"><i class="fa-solid fa-thumbtack mr-1"></i> Transversal</div>` : '';
+
+            return `
+                <div onclick="selectDeck('${deckId}')" class="bg-slate-800 border border-slate-700 hover:border-slate-500 rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl group relative overflow-hidden flex flex-col h-full">
+                    ${rootBadge}
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${deck.bgGradient} opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
+                    <div class="flex items-center gap-4 mb-4 mt-1">
+                        <div class="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-700 shadow-inner">
+                            <i class="fa-solid ${deck.icon} ${deck.color} text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider">${deck.subject}</h3>
+                        </div>
+                    </div>
+                    <h2 class="text-white font-semibold text-lg leading-tight mb-6 flex-grow group-hover:text-blue-300 transition-colors">${deck.title}</h2>
+                    
+                    <div class="mt-auto z-10">
+                        <div class="flex justify-between text-xs text-slate-400 mb-2">
+                            <span>Progression</span>
+                            <span>${progress}% (${known}/${total})</span>
+                        </div>
+                        <div class="w-full bg-slate-900 rounded-full h-2">
+                            <div class="bg-gradient-to-r ${deck.bgGradient} h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showColloscope() {
+            mainMenuEl.classList.add('hidden');
+            colloscopeAreaEl.classList.remove('hidden');
+            backBtn.classList.remove('hidden');
+            renderSchedule();
+        }
+
+        function renderSchedule() {
+            const groupSelect = document.getElementById('group-select').value;
+            const weekSelect = document.getElementById('week-select').value;
+            scheduleResultsEl.innerHTML = '';
+            
+            let foundColles = false;
+
+            colloscopeData.forEach(colle => {
+                const currentGroupData = colle.groups[weekSelect];
+                
+                if (currentGroupData && currentGroupData !== "-") {
+                    const groupsArray = currentGroupData.toString().split(',').map(s => s.trim());
+                    
+                    let isMatch = false;
+                    let specialNote = "";
+
+                    groupsArray.forEach(g => {
+                        if (g === groupSelect) {
+                            isMatch = true;
+                        } else if (g.includes('.')) {
+                            // Gestion des sous-groupes (ex: "10.1" pour Groupe 10, Elève 1)
+                            const parts = g.split('.');
+                            if (parts[0] === groupSelect) {
+                                isMatch = true;
+                                specialNote = `<div class="mt-3 text-xs font-bold text-rose-300 bg-rose-900/40 inline-flex items-center px-2 py-1 rounded-md border border-rose-500/30"><i class="fa-solid fa-user-pen mr-2"></i> Uniquement pour l'élève n°${parts[1]}</div>`;
+                            }
+                        }
+                    });
+
+                    if (isMatch) {
+                        foundColles = true;
+                        const card = `
+                            <div class="bg-slate-800 ${colle.border} border rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow flex items-start gap-4 flex-col sm:flex-row">
+                                <div class="w-12 h-12 rounded-lg ${colle.bg} flex items-center justify-center shrink-0">
+                                    <i class="fa-solid ${colle.icon} ${colle.color} text-xl"></i>
+                                </div>
+                                <div class="flex-grow">
+                                    <h4 class="text-white font-bold text-lg leading-tight mb-1">${colle.subject}</h4>
+                                    <div class="text-slate-400 text-sm flex flex-col gap-1">
+                                        <span><i class="fa-regular fa-clock w-4"></i> ${colle.time}</span>
+                                        <span><i class="fa-solid fa-location-dot w-4"></i> Salle ${colle.room}</span>
+                                        <span><i class="fa-solid fa-user-tie w-4"></i> ${colle.prof}</span>
+                                    </div>
+                                    ${specialNote}
+                                </div>
+                            </div>
+                        `;
+                        scheduleResultsEl.innerHTML += card;
+                    }
+                }
+            });
+
+            if (!foundColles) {
+                scheduleResultsEl.innerHTML = `
+                    <div class="col-span-1 md:col-span-2 text-center p-8 bg-slate-800/50 rounded-xl border border-dashed border-slate-700">
+                        <i class="fa-regular fa-face-smile text-slate-500 text-4xl mb-3"></i>
+                        <p class="text-slate-400">Aucune khôlle programmée pour le Groupe ${groupSelect} cette semaine.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderDeckMenu() {
+            deckSelectionEl.innerHTML = '';
+            for (const [id, deck] of Object.entries(decks)) {
+                const total = deck.cards.length;
+                const known = deck.known.size;
+                const progress = total > 0 ? Math.round((known / total) * 100) : 0;
+                
+                deckSelectionEl.innerHTML += `
+                    <div onclick="selectDeck('${id}')" class="bg-slate-800 border border-slate-700 hover:border-slate-500 rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl group relative overflow-hidden flex flex-col h-full">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${deck.bgGradient} opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-700 shadow-inner">
+                                <i class="fa-solid ${deck.icon} ${deck.color} text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider">${deck.subject}</h3>
+                            </div>
+                        </div>
+                        <h2 class="text-white font-semibold text-lg leading-tight mb-6 flex-grow group-hover:text-blue-300 transition-colors">${deck.title}</h2>
+                        
+                        <div class="mt-auto">
+                            <div class="flex justify-between text-xs text-slate-400 mb-2">
+                                <span>Progression</span>
+                                <span>${progress}% (${known}/${total})</span>
+                            </div>
+                            <div class="w-full bg-slate-900 rounded-full h-2">
+                                <div class="bg-gradient-to-r ${deck.bgGradient} h-2 rounded-full" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function selectDeck(id) {
+            currentDeckId = id;
+            
+            mainMenuEl.classList.add('hidden');
+            flashcardAreaEl.classList.remove('hidden');
+            backBtn.classList.remove('hidden');
+            progressContainer.classList.remove('hidden');
+            
+            const deck = decks[currentDeckId];
+            deck.known.clear(); // Reset pour la nouvelle session
+            
+            // Initialiser la file d'attente (système Anki)
+            studyQueue = Array.from({length: deck.cards.length}, (_, i) => i);
+            
+            document.getElementById('current-deck-name').innerText = `${deck.subject} : ${deck.title}`;
+            
+            document.getElementById('card-icon').className = `fa-regular ${deck.icon} ${deck.color} text-4xl mb-4 opacity-70`;
+            document.getElementById('card-back-bg').className = `card-face card-face-back bg-gradient-to-br ${deck.bgGradient}`;
+            
+            updateProgress();
+            loadNextCardInQueue();
+        }
+
+        function loadNextCardInQueue() {
+            if (studyQueue.length === 0) {
+                flashcardAreaEl.classList.add('hidden');
+                endScreenEl.classList.remove('hidden');
+                endScreenEl.classList.add('flex');
+                return;
+            }
+            
+            // Prendre la première carte de la file d'attente
+            currentCardIndex = studyQueue.shift();
+            document.getElementById('cards-remaining-display').innerText = studyQueue.length + 1;
+            
+            loadCardIntoDOM(currentCardIndex);
+        }
+
+        function loadCardIntoDOM(index) {
+            const deck = decks[currentDeckId];
+            
+            if (isFlipped) {
+                document.getElementById('flashcard').classList.remove('is-flipped');
+                isFlipped = false;
+            }
+            document.getElementById('hint-box').classList.remove('show');
+
+            setTimeout(() => {
+                const card = deck.cards[index];
+                document.getElementById('card-front-text').innerHTML = card.front;
+                document.getElementById('card-back-text').innerHTML = card.back;
+                document.getElementById('card-hint-text').innerHTML = card.hint || "Pas de précision supplémentaire.";
+                renderMath();
+            }, 150);
+        }
+
+        function renderMath() {
+            if (window.renderMathInElement) {
+                renderMathInElement(document.getElementById('flashcard'), {
+                    delimiters: [ {left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false} ],
+                    throwOnError : false
+                });
+            }
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            document.getElementById('flashcard').classList.toggle('is-flipped');
+        }
+
+        function toggleHint(e) {
+            e.stopPropagation();
+            document.getElementById('hint-box').classList.toggle('show');
+        }
+
+        function markKnown() {
+            decks[currentDeckId].known.add(currentCardIndex);
+            updateProgress();
+            loadNextCardInQueue();
+        }
+
+        function markReview() {
+            decks[currentDeckId].known.delete(currentCardIndex);
+            // Logique ANKI : on remet la carte ratée à la fin de la file d'attente !
+            studyQueue.push(currentCardIndex);
+            updateProgress();
+            loadNextCardInQueue();
+        }
+
+        function updateProgress() {
+            const deck = decks[currentDeckId];
+            const percent = deck.cards.length > 0 ? (deck.known.size / deck.cards.length) * 100 : 0;
+            const bar = document.getElementById('progress-bar');
+            bar.style.width = `${percent}%`;
+            document.getElementById('progress-text').innerText = `${deck.known.size} / ${deck.cards.length} acquis`;
+            
+            if (percent === 100) {
+                bar.classList.replace('from-blue-500', 'from-emerald-400');
+                bar.classList.replace('to-indigo-500', 'to-emerald-500');
+            } else {
+                bar.classList.replace('from-emerald-400', 'from-blue-500');
+                bar.classList.replace('to-emerald-500', 'to-indigo-500');
+            }
+        }
+
+        function resetSession() {
+            selectDeck(currentDeckId);
+            endScreenEl.classList.add('hidden');
+            endScreenEl.classList.remove('flex');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (currentDeckId && endScreenEl.classList.contains('hidden') && !mainMenuEl.classList.contains('hidden') === false && colloscopeAreaEl.classList.contains('hidden')) {
+                if (e.code === 'Space') { 
+                    e.preventDefault(); 
+                    flipCard(); 
+                } 
+                else if (e.code === 'ArrowRight') markKnown();
+                else if (e.code === 'ArrowLeft') markReview();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
