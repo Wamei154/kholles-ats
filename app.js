@@ -99,6 +99,7 @@ function showMainMenu() {
     currentDeckId = null;
     mainMenuEl.classList.remove('hidden');
     colloscopeAreaEl.classList.add('hidden');
+    document.getElementById('edt-area').classList.add('hidden');
     flashcardAreaEl.classList.add('hidden');
     endScreenEl.classList.add('hidden');
     backBtn.classList.add('hidden');
@@ -230,6 +231,19 @@ function showColloscope() {
     colloscopeAreaEl.classList.remove('hidden');
     backBtn.classList.remove('hidden');
     renderSchedule();
+}
+
+function showEDT() {
+    mainMenuEl.classList.add('hidden');
+    document.getElementById('edt-area').classList.remove('hidden');
+    backBtn.classList.remove('hidden');
+}
+
+function toggleEdtZoom() {
+    const lightbox = document.getElementById('edt-lightbox');
+    const isHidden = lightbox.classList.contains('hidden');
+    lightbox.classList.toggle('hidden', !isHidden);
+    lightbox.classList.toggle('flex', isHidden);
 }
 
 function renderSchedule() {
