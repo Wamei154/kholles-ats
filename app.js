@@ -83,12 +83,16 @@ function getCurrentWeekIndex() {
         "2027-04-05", "2027-04-12"
     ];
     
+    let currentIndex = 0;
+    // La boucle cherche la semaine passée la plus récente.
     for (let i = 0; i < weekDates.length; i++) {
-        if (now <= new Date(weekDates[i])) {
-            return i.toString();
+        if (now >= new Date(weekDates[i])) {
+            currentIndex = i;
+        } else {
+            break; // Dès qu'on trouve une date dans le futur, on arrête la boucle.
         }
     }
-    return (weekDates.length - 1).toString();
+    return currentIndex.toString();
 }
 
 function showMainMenu() {
@@ -244,7 +248,8 @@ function renderSchedule() {
     if (agendaInfo && (agendaInfo.ds || agendaInfo.obs)) {
         let content = "";
         if (agendaInfo.ds) {
-            content += `<div class="text-blue-400"><i class="fa-solid fa-file-pen mr-2"></i> Devoir (Jusqu'au ${agendaInfo.date}) : <span class="text-white">${agendaInfo.ds}</span></div>`;
+            // "Jusqu'au" a été supprimé ici :
+            content += `<div class="text-blue-400"><i class="fa-solid fa-file-pen mr-2"></i> Devoir (${agendaInfo.date}) : <span class="text-white">${agendaInfo.ds}</span></div>`;
         }
         if (agendaInfo.obs) {
             content += `<div class="text-yellow-400 text-sm mt-1"><i class="fa-solid fa-circle-exclamation mr-1"></i> ${agendaInfo.obs}</div>`;
