@@ -50,7 +50,7 @@
             <div id="colloscope-btn-container" class="mb-8">
                 <h2 class="text-2xl font-bold text-white mb-6 flex items-center"><i class="fa-solid fa-layer-group text-blue-400 mr-3"></i> Outils & Révisions</h2>
                 <div class="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
-                    <div onclick="showColloscope()" class="bg-gradient-to-br from-indigo-900 to-slate-800 border border-indigo-500/30 hover:border-indigo-400 rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/20 group relative overflow-hidden sm:col-span-2">
+                    <div onclick="showColloscope()" class="bg-gradient-to-br from-indigo-900 to-slate-800 border border-indigo-500/30 hover:border-indigo-400 rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/20 group relative overflow-hidden">
                         <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500 opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
                         <div class="flex items-center gap-5">
                             <div class="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/50 shadow-inner">
@@ -60,6 +60,20 @@
                                 <h3 class="text-indigo-300 text-xs font-bold uppercase tracking-wider mb-1">Emploi du temps</h3>
                                 <h2 class="text-white font-bold text-xl leading-tight">Mon Colloscope Personnalisé</h2>
                                 <p class="text-slate-400 text-sm mt-1">Sélectionnez votre groupe et trouvez vos khôlles de la semaine.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div onclick="showEDT()" class="bg-gradient-to-br from-blue-900 to-slate-800 border border-blue-500/30 hover:border-blue-400 rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/20 group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500 opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
+                        <div class="flex items-center gap-5">
+                            <div class="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center border border-blue-500/50 shadow-inner">
+                                <i class="fa-regular fa-image text-blue-400 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-blue-300 text-xs font-bold uppercase tracking-wider mb-1">Emploi du temps</h3>
+                                <h2 class="text-white font-bold text-xl leading-tight">Mon EDT</h2>
+                                <p class="text-slate-400 text-sm mt-1">Voir l'image de mon emploi du temps.</p>
                             </div>
                         </div>
                     </div>
@@ -141,6 +155,20 @@
             <h3 class="text-xl font-bold text-white mb-4 border-b border-slate-700 pb-2">Vos Khôlles programmées :</h3>
             <div id="schedule-results" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             </div>
+        </div>
+
+        <div id="edt-area" class="w-full hidden fade-in flex flex-col items-center">
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-3 shadow-xl w-full max-w-3xl">
+                <img id="edt-image" src="edt.jpg" alt="Mon emploi du temps"
+                     class="w-full rounded-xl cursor-zoom-in"
+                     onclick="toggleEdtZoom()"
+                     onerror="this.closest('div').innerHTML='<div class=\'text-center text-slate-400 py-10\'><i class=\'fa-regular fa-image text-4xl mb-3 block\'></i>Aucune image trouvée à <code>edt.jpg</code>.<br>Ajoute ton fichier à la racine du dépôt.</div>'">
+            </div>
+            <p class="text-slate-500 text-xs mt-3">Clique sur l'image pour zoomer / dézoomer.</p>
+        </div>
+
+        <div id="edt-lightbox" class="hidden fixed inset-0 bg-black/90 z-50 items-center justify-center p-4" onclick="toggleEdtZoom()">
+            <img id="edt-lightbox-img" src="edt.jpg" class="max-w-full max-h-full rounded-lg shadow-2xl">
         </div>
 
         <div id="end-screen" class="hidden w-full text-center py-12 flex-col items-center">
