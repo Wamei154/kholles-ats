@@ -209,6 +209,29 @@ const mathCardsChap2 = [
     {front: "Équation d'un cercle dans $\\mathbb{C}$", back: "Pour $A(a)$ et $R \\in \\mathbb{R}^{+*}$ : $|z-a|=R$ est le cercle de centre $A$ et de rayon $R$.<br>$|z-a|\\le R$ est le disque fermé, $|z-a|<R$ le disque ouvert, de centre $A$ et de rayon $R$.", hint: "$|z-a|$ représente la distance $AM$."}
 ];
 
+const mathCardsDS1 = [
+    {front: "Méthode : résoudre une équation par analyse-synthèse", back: "<b>Analyse</b> : on suppose $x$ solution, on transforme (ex : élève au carré) pour obtenir une condition nécessaire, on résout.<br><b>Synthèse</b> : on réinjecte chaque solution trouvée dans l'équation de départ pour vérifier qu'elle convient bien.", hint: "Indispensable dès qu'on élève au carré (transformation non réversible en général)."},
+    {front: "Récurrence : démontrer qu'une expression est un multiple de $k$", back: "À l'hérédité, on développe le terme au rang $n+1$, puis on le réécrit sous la forme (terme au rang $n$) $+\\, k\\times(\\text{entier})$ pour conclure par somme de deux multiples de $k$.", hint: "Ex : $(n+1)^3+5(n+1) = (n^3+5n) + 3(n^2+n+2)$."},
+    {front: "Démontrer par contraposée : rédaction type", back: "Pour montrer $n^2$ impair $\\Rightarrow n$ impair, on montre la contraposée $n$ pair $\\Rightarrow n^2$ pair : on pose $n=2k$ avec $k\\in\\mathbb{N}$, on calcule $n^2=4k^2=2\\times(2k^2)$, et $2k^2\\in\\mathbb{N}$ donc $n^2$ est pair.", hint: "Toujours poser explicitement $n=2k$ (pair) ou $n=2k+1$ (impair)."},
+    {front: "Démontrer par l'absurde qu'aucun entier n'existe entre deux bornes", back: "On suppose qu'un entier $m$ existe entre les deux bornes, on manipule l'encadrement (élévation au carré, etc.) jusqu'à obtenir un encadrement impossible pour un entier (ex : $0<m^2-n^2-2n<1$), d'où contradiction.", hint: "Il n'existe pas d'entier strictement compris entre 0 et 1."},
+    {front: "Télescopage : principe", back: "$$\\sum_{k=0}^{n}(a_{k+1}-a_k) = a_{n+1}-a_0$$", hint: "Les termes intermédiaires s'annulent deux à deux en cascade."},
+    {front: "Décomposition type $\\dfrac{1}{(k+1)(k+2)}$", back: "$$\\frac{1}{(k+1)(k+2)} = \\frac{1}{k+1} - \\frac{1}{k+2}$$", hint: "S'obtient par réduction au même dénominateur ; c'est le point de départ d'un télescopage."},
+    {front: "$\\binom{n}{2}$ sans factorielle", back: "$$\\binom{n}{2} = \\frac{n(n-1)}{2}$$", hint: "On simplifie $\\dfrac{n!}{2!(n-2)!}$."},
+    {front: "Symétrie des coefficients binomiaux", back: "$$\\binom{n}{p} = \\binom{n}{n-p}$$", hint: "Choisir $p$ éléments à garder revient à choisir les $n-p$ qu'on écarte."},
+    {front: "Astuce : montrer que $(1+\\sqrt{2})^n+(1-\\sqrt{2})^n \\in \\mathbb{N}$", back: "On développe les deux expressions avec le binôme de Newton. Pour $k$ pair, $(\\sqrt2)^k$ et $(-\\sqrt2)^k$ sont égaux et entiers (les termes s'ajoutent). Pour $k$ impair, ils sont opposés (les termes s'annulent). La somme finale ne contient que des entiers.", hint: "Regarder la parité de $k$ dans $(\\pm\\sqrt2)^k$."},
+    {front: "Mettre un quotient de complexes sous forme algébrique", back: "On multiplie numérateur et dénominateur par le conjugué du dénominateur :<br>$$\\frac{z_1}{z_2} = \\frac{z_1 \\overline{z_2}}{|z_2|^2}$$", hint: "Le dénominateur devient réel puisque $z_2\\overline{z_2}=|z_2|^2$."},
+    {front: "Module et argument d'un quotient $z_1/z_2$", back: "$$\\left|\\frac{z_1}{z_2}\\right| = \\frac{|z_1|}{|z_2|} \\qquad \\arg\\left(\\frac{z_1}{z_2}\\right) = \\arg(z_1)-\\arg(z_2) \\ [2\\pi]$$", hint: "Permet de retrouver directement la forme trigonométrique du quotient."},
+    {front: "Trouver $\\cos\\theta$ par identification de deux écritures de $z$", back: "Si on connaît $z$ sous forme algébrique <b>et</b> sous forme trigonométrique $|z|(\\cos\\theta+i\\sin\\theta)$, on identifie les parties réelles entre elles (et les parties imaginaires entre elles) pour en déduire $\\cos\\theta$ (et $\\sin\\theta$).", hint: "C'est ainsi qu'on obtient des valeurs comme $\\cos(\\pi/12)$."},
+    {front: "Résoudre $z^n = a$ avec $|a|=1$ (ex : $z^n=i$)", back: "On utilise $|z^n|=|z|^n$ et $\\arg(z^n)=n\\arg(z)\\,[2\\pi]$, ce qui donne une équation sur $\\arg(z)$ (ou sur $n$) du type $n\\theta = \\arg(a) + 2k\\pi,\\ k\\in\\mathbb{Z}$.", hint: "Ne jamais oublier le $+2k\\pi$, sinon on perd des solutions."},
+    {front: "Racine carrée $\\delta$ d'un complexe $a+ib$ (méthode algébrique)", back: "On pose $\\delta = x+iy$ et on résout le système :<br>$$x^2-y^2=a \\qquad 2xy=b \\qquad x^2+y^2=|a+ib|$$", hint: "La 3ème équation vient de $|\\delta|^2=|\\delta^2|=|a+ib|$ ; utile quand $\\arg(a+ib)$ n'est pas une valeur connue."},
+    {front: "Résoudre $az^2+bz+c=0$ dans $\\mathbb{C}$ (coefficients complexes)", back: "On calcule $\\Delta=b^2-4ac$ (complexe en général), on trouve une racine carrée $\\delta$ de $\\Delta$, puis :<br>$$z_{1,2} = \\frac{-b\\pm\\delta}{2a}$$", hint: "Pas de disjonction de cas sur le signe de $\\Delta$ : $\\Delta$ n'est pas forcément réel."},
+    {front: "Formule somme $\\to$ produit : $\\cos p+\\cos q$", back: "$$\\cos p + \\cos q = 2\\cos\\left(\\frac{p+q}{2}\\right)\\cos\\left(\\frac{p-q}{2}\\right)$$", hint: "S'obtient en développant $\\cos(a+b)+\\cos(a-b)$ avec $a=\\frac{p+q}{2}$, $b=\\frac{p-q}{2}$."},
+    {front: "Résoudre une équation produit du type $\\cos(2x)(2\\cos x+1)=0$", back: "Un produit est nul si et seulement si l'un des facteurs est nul : on résout séparément $\\cos(2x)=0$ et $\\cos x=-\\frac12$, puis on réunit les solutions.", hint: "$\\cos\\theta=0 \\Leftrightarrow \\theta=\\frac{\\pi}{2}\\,[\\pi]$ ; $\\cos\\theta=-\\frac12 \\Leftrightarrow \\theta=\\pm\\frac{2\\pi}{3}\\,[2\\pi]$."},
+    {front: "Résoudre $\\cos x+\\cos 2x+\\cos 3x=0$", back: "On regroupe $\\cos x+\\cos 3x$ avec la formule somme-produit pour faire apparaître $\\cos(2x)$ en facteur commun, puis on se ramène à un produit nul.", hint: "$\\cos x+\\cos 3x = 2\\cos(2x)\\cos(x)$."},
+    {front: "Négation d'une proposition avec $\\forall ... \\exists$", back: "$$\\overline{\\forall x, \\exists y, P(x,y)} = \\exists x, \\forall y, \\overline{P(x,y)}$$", hint: "On inverse tous les quantificateurs dans l'ordre, puis on nie la proposition finale."},
+    {front: "Réflexe : $|z^n|$ et $\\arg(z^n)$", back: "$$|z^n| = |z|^n \\qquad \\arg(z^n) = n\\arg(z) \\ [2\\pi]$$", hint: "Outil de base pour résoudre toute équation du type $z^n = a$."}
+];
+
 const elecCards = [
     { front: "Loi des Nœuds (Kirchhoff)", back: "La somme des intensités des courants qui entrent par un nœud est égale à la somme des intensités des courants qui en sortent.<br>$$\\sum I_{entrants} = \\sum I_{sortants}$$", hint: "Traduit la conservation de la charge électrique." },
     { front: "Loi des Mailles (Kirchhoff)", back: "Dans une maille orientée fermée, la somme algébrique des tensions est nulle : $$\\sum U_k = 0$$", hint: "Traduit la conservation de l'énergie électrique." },
@@ -224,6 +247,7 @@ const decks = {
     'maths_memento': { title: "Mémento complet (Dérivées, Trigo...)", subject: "Mathématiques", icon: "fa-book-open", color: "text-indigo-300", bgGradient: "from-indigo-600 to-purple-700", cards: mathCardsMemento, known: new Set() },
     'maths_chap1': { title: "Chapitre 1 : Rédiger, Démontrer, Calculer", subject: "Mathématiques", icon: "fa-calculator", color: "text-blue-400", bgGradient: "from-blue-500 to-indigo-600", cards: mathCardsChap1, known: new Set() },
     'maths_chap2': { title: "Chapitre 2 : Nombres Complexes", subject: "Mathématiques", icon: "fa-calculator", color: "text-blue-400", bgGradient: "from-blue-500 to-indigo-600", cards: mathCardsChap2, known: new Set() },
+    'maths_ds1': { title: "Révisions DS1 (Techniques & Réflexes)", subject: "Mathématiques", icon: "fa-graduation-cap", color: "text-rose-400", bgGradient: "from-rose-500 to-pink-700", cards: mathCardsDS1, known: new Set() },
     'elec_s1': { title: "Lois fondamentales & Impédances", subject: "Élec", icon: "fa-desktop", color: "text-emerald-400", bgGradient: "from-emerald-500 to-teal-700", cards: elecCards, known: new Set() }
 };
 
@@ -231,7 +255,7 @@ const decks = {
 const library = {
     'maths': { 
         title: 'Mathématiques', icon: 'fa-calculator', color: 'text-blue-400', bgGradient: 'from-blue-600 to-indigo-900', 
-        rootDecks: ['maths_memento'], 
+        rootDecks: ['maths_memento', 'maths_ds1'], 
         weeks: { 
             's1': { title: 'Semaine 1 (14 Sept)', decks: ['maths_s1'] },
             'chap1': { title: 'Chapitre 1 : Rédiger, Démontrer, Calculer', decks: ['maths_chap1'] },
