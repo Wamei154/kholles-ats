@@ -149,6 +149,66 @@ const mathCardsMemento = [
     { front: "Primitives de formes $u'$", back: "$$\\int \\frac{u'}{u} dx = \\ln(|u|) + C$$<br>$$\\int \\frac{u'}{\\sqrt{u}} dx = 2\\sqrt{u} + C$$<br>$$\\int u'u^n dx = \\frac{u^{n+1}}{n+1} + C$$", hint: "Issu de votre Mémento manuscrit." }
 ];
 
+const mathCardsChap1 = [
+    {front: "Proposition et théorème", back: "Une <b>proposition</b> est une phrase mathématique qui a un sens et une seule signification : elle est soit vraie, soit fausse.<br>Un <b>théorème</b> est une proposition que l'on a démontrée comme étant vraie.", hint: "Une proposition non démontrée n'est qu'une conjecture."},
+    {front: "Signification des quantificateurs $\\forall$ et $\\exists$", back: "$\\forall$ : Pour tout élément.<br>$\\exists$ : Il existe au moins un élément.", hint: "Vocabulaire de logique de base."},
+    {front: "Négation de « $P$ et $Q$ » / « $P$ ou $Q$ »", back: "$$\\overline{P \\text{ et } Q} = \\overline{P} \\text{ ou } \\overline{Q}$$$$\\overline{P \\text{ ou } Q} = \\overline{P} \\text{ et } \\overline{Q}$$", hint: "Lois de De Morgan : le « et » devient « ou » et inversement."},
+    {front: "Implication $P \\Rightarrow Q$ : vocabulaire", back: "$P$ est une condition <b>suffisante</b> pour $Q$.<br>$Q$ est une condition <b>nécessaire</b> pour $P$.", hint: "« Il suffit que $P$ » ; « il faut que $Q$ »."},
+    {front: "Négation de l'implication $P \\Rightarrow Q$", back: "$$\\overline{P \\Rightarrow Q} = P \\text{ et } \\overline{Q}$$", hint: "Car « $P \\Rightarrow Q$ » équivaut à « $\\overline{P}$ ou $Q$ »."},
+    {front: "Implication réciproque de $P \\Rightarrow Q$", back: "$$Q \\Rightarrow P$$", hint: "On échange les rôles de $P$ et $Q$."},
+    {front: "Équivalence $P \\Leftrightarrow Q$", back: "$P$ et $Q$ sont équivalentes lorsque $P \\Rightarrow Q$ <b>et</b> $Q \\Rightarrow P$ sont vraies.", hint: "Les deux implications doivent être vraies simultanément."},
+    {front: "Contraposée de $P \\Rightarrow Q$", back: "$$\\overline{Q} \\Rightarrow \\overline{P}$$", hint: "Deux implications contraposées sont équivalentes."},
+    {front: "Démontrer une égalité $m = p$ : les 3 méthodes", back: "1. Transformer un membre par étapes jusqu'à obtenir l'autre.<br>2. Transformer $m$ et $p$ pour montrer qu'ils sont égaux à une même troisième expression.<br>3. Montrer que $m - p = 0$.", hint: "Ne pas confondre égalité et équivalence."},
+    {front: "Démontrer par déduction", back: "Pour montrer que $P \\Rightarrow Q$ est vrai, on suppose $P$ vraie et on montre que $Q$ est vraie.", hint: "C'est la méthode de démonstration la plus directe."},
+    {front: "Démontrer par disjonction des cas", back: "Pour démontrer $P \\Rightarrow Q$, on introduit une propriété $P'$ puis on démontre que $(P \\text{ et } P') \\Rightarrow Q$ et que $(P \\text{ et } \\overline{P'}) \\Rightarrow Q$.", hint: "Exemple : distinguer le cas $n$ pair et le cas $n$ impair."},
+    {front: "Démontrer par analyse-synthèse", back: "<b>Analyse</b> : on suppose qu'une solution existe et on en déduit des conditions nécessaires sur elle.<br><b>Synthèse</b> : on vérifie que les solutions trouvées conviennent bien.", hint: "Utile quand on ne peut pas raisonner directement par équivalence."},
+    {front: "Démontrer par contraposée", back: "Une implication et sa contraposée étant équivalentes, il est parfois plus simple de démontrer $\\overline{Q} \\Rightarrow \\overline{P}$ plutôt que $P \\Rightarrow Q$.", hint: "Exemple : $n^2$ impair $\\Rightarrow n$ impair."},
+    {front: "Démontrer par l'absurde : Principe", back: "Pour démontrer $P \\Rightarrow Q$, on suppose que $P$ est vraie et que $Q$ est fausse ($\\overline{Q}$), puis on cherche à aboutir à une contradiction.", hint: "Utile pour prouver l'irrationalité de $\\sqrt{2}$ par exemple."},
+    {front: "Démonstration par récurrence : Les 3 étapes", back: "1. <b>Initialisation</b> : On vérifie que la propriété est vraie au rang $n_0$.<br>2. <b>Hérédité</b> : On suppose la propriété vraie à un rang $n \\ge n_0$, et on montre qu'elle reste vraie au rang $n+1$.<br>3. <b>Conclusion</b> : La propriété est vraie pour tout $n \\ge n_0$.", hint: "Le principe des dominos."},
+    {front: "Définition de $\\sum$ et $\\prod$", back: "Pour $n+1$ réels $a_0, a_1, ..., a_n$ :<br>$$\\sum_{k=0}^{n} a_k = a_0 + a_1 + \\cdots + a_n$$$$\\prod_{k=0}^{n} a_k = a_0 \\times a_1 \\times \\cdots \\times a_n$$", hint: "$k$ est une variable muette, on peut la remplacer par n'importe quelle lettre."},
+    {front: "Relation de Chasles (sommes)", back: "Pour $m < n$ :<br>$$\\sum_{k=0}^{m} a_k + \\sum_{k=m+1}^{n} a_k = \\sum_{k=0}^{n} a_k$$", hint: "On découpe la somme en deux morceaux consécutifs."},
+    {front: "Linéarité de la somme", back: "$$\\sum_{k=0}^{n} \\lambda a_k = \\lambda \\sum_{k=0}^{n} a_k$$$$\\sum_{k=0}^{n} (a_k + b_k) = \\sum_{k=0}^{n} a_k + \\sum_{k=0}^{n} b_k$$", hint: "Vrai pour tout $\\lambda \\in \\mathbb{R}$."},
+    {front: "Changement d'indice (sommes)", back: "$$\\sum_{k=1}^{n} a_{k-1} = \\sum_{k=0}^{n-1} a_k$$", hint: "On décale l'indice de sommation tout en gardant les mêmes termes."},
+    {front: "Définition de la factorielle $n!$", back: "$$n! = 1 \\times 2 \\times 3 \\times ... \\times n$$<br>Convention : $0! = 1$", hint: "Produit des $n$ premiers entiers naturels non nuls."},
+    {front: "Coefficient binomial $\\binom{n}{p}$ : définition", back: "Le nombre de combinaisons de $p$ éléments d'un ensemble $E$ de cardinal $n$ est noté $\\binom{n}{p}$, qui se lit « $p$ parmi $n$ ».", hint: "Une combinaison de $p$ éléments est une partie de $E$ de cardinal $p$."},
+    {front: "Formule du triangle de Pascal", back: "$$\\binom{n}{p} = \\binom{n-1}{p} + \\binom{n-1}{p-1}$$", hint: "Utile pour calculer les coefficients de proche en proche."},
+    {front: "Formule explicite du coefficient binomial $\\binom{n}{p}$", back: "$$\\binom{n}{p} = \\frac{n!}{p!(n-p)!}$$", hint: "Nombre de combinaisons de $p$ éléments parmi $n$."},
+    {front: "Formule du binôme de Newton", back: "$$(a+b)^n = \\sum_{k=0}^{n} \\binom{n}{k} a^k b^{n-k}$$<br>ou<br>$$(a+b)^n = \\sum_{k=0}^{n} \\binom{n}{k} a^{n-k} b^k$$", hint: "Généralisation des identités remarquables."}
+];
+
+const mathCardsChap2 = [
+    {front: "Forme algébrique d'un nombre complexe", back: "$$z = x + iy \\quad \\text{où } (x,y) \\in \\mathbb{R}^2 \\text{ et } i^2 = -1$$", hint: "$x$ est la partie réelle, $y$ la partie imaginaire."},
+    {front: "Notation partie réelle / partie imaginaire", back: "Le réel $x$ est la partie réelle de $z$, notée $\\Re(z)$ ou $\\text{Re}(z)$.<br>Le réel $y$ est la partie imaginaire de $z$, notée $\\Im(z)$ ou $\\text{Im}(z)$.", hint: "Attention : la partie imaginaire est un réel (pas $iy$)."},
+    {front: "Imaginaire pur", back: "$z$ est un imaginaire pur lorsque $\\Re(z) = 0$.", hint: "$z$ s'écrit alors $z = iy$."},
+    {front: "Conjugué d'un nombre complexe", back: "Le conjugué de $z = x+iy$ est $\\overline{z} = x - iy$.", hint: "On change le signe de la partie imaginaire."},
+    {front: "Affixe d'un point / d'un vecteur", back: "À tout point $M(x,y)$ du plan, on associe l'affixe $z = x+iy$ : $M$ est le point image de $z$.<br>De même, tout vecteur $\\vec{w}(x,y)$ a pour affixe $z = x+iy$.", hint: "Le plan $\\mathbb{R}^2$ s'identifie à $\\mathbb{C}$."},
+    {front: "Module d'un nombre complexe", back: "$$|z| = \\sqrt{x^2 + y^2}$$", hint: "Correspond à la distance $OM$ dans le plan complexe : $|z| = OM$."},
+    {front: "Argument d'un nombre complexe", back: "Toute mesure $\\theta$ de l'angle $(\\vec{u}, \\vec{OM})$ est un argument de $z$, noté $\\arg(z)$ :<br>$$\\cos \\theta = \\frac{\\Re(z)}{|z|} \\quad \\text{et} \\quad \\sin \\theta = \\frac{\\Im(z)}{|z|}$$", hint: "L'argument est défini modulo $2\\pi$."},
+    {front: "Formes trigonométrique et exponentielle", back: "Trigonométrique : $z = |z|(\\cos \\theta + i \\sin \\theta)$<br>Exponentielle : $z = \\rho e^{i\\theta}$, avec $\\rho = |z| \\in \\mathbb{R}^+$ et $\\theta = \\arg(z) \\in \\mathbb{R}$.", hint: "On pose $e^{i\\theta} = \\cos\\theta + i\\sin\\theta$."},
+    {front: "Propriétés du conjugué (Somme et Produit)", back: "$$\\overline{z + z'} = \\overline{z} + \\overline{z'}$$$$\\overline{z \\times z'} = \\overline{z} \\times \\overline{z'}$$$$z\\overline{z} = |z|^2$$", hint: "Le conjugué se distribue sur toutes les opérations de base."},
+    {front: "Lien entre conjugué, partie réelle et imaginaire", back: "$$z + \\overline{z} = 2\\Re(z)$$$$z - \\overline{z} = 2i\\Im(z)$$", hint: "$z$ est réel $\\Leftrightarrow z = \\overline{z}$ ; $z$ est imaginaire pur $\\Leftrightarrow z = -\\overline{z}$."},
+    {front: "Propriétés du module (produit, puissance, quotient)", back: "$$|\\overline{z}| = |z| \\quad |zz'| = |z| \\times |z'| \\quad |z^n| = |z|^n \\quad \\left|\\frac{z}{z'}\\right| = \\frac{|z|}{|z'|}$$", hint: "Le module se comporte comme une valeur absolue vis-à-vis des opérations."},
+    {front: "Inégalité triangulaire", back: "$$|z + z'| \\le |z| + |z'|$$", hint: "La longueur d'un côté d'un triangle est inférieure à la somme des deux autres."},
+    {front: "Propriétés de l'argument (produit, puissance, inverse, quotient)", back: "$$\\arg(\\overline{z}) = -\\arg(z) \\quad \\arg(zz') = \\arg(z) + \\arg(z') \\quad \\arg(z^n) = n\\arg(z)$$$$\\arg\\left(\\frac{1}{z}\\right) = -\\arg(z) \\quad \\arg\\left(\\frac{z}{z'}\\right) = \\arg(z) - \\arg(z')$$", hint: "Toutes ces égalités sont valables modulo $2\\pi$."},
+    {front: "Caractériser un réel positif / un imaginaire pur avec l'argument", back: "$$\\arg(z) = 0 \\ [2\\pi] \\Leftrightarrow z \\in \\mathbb{R}^{+*}$$$$\\arg(z) = \\frac{\\pi}{2} \\ [\\pi] \\Leftrightarrow z \\in i\\mathbb{R}^*$$", hint: "Le premier est modulo $2\\pi$, le second modulo $\\pi$."},
+    {front: "Racines carrées d'un nombre complexe", back: "Tout nombre complexe non nul $a$ admet deux racines carrées opposées : ce sont les solutions de $z^2 = a$.", hint: "Si on connaît un argument de $a$, on trouve facilement la forme trigonométrique des racines."},
+    {front: "Discriminant d'une équation du second degré dans $\\mathbb{C}$", back: "Pour $(E) : az^2+bz+c=0$ avec $(a,b,c) \\in \\mathbb{C}^3$, $a\\ne0$, le discriminant est $$\\Delta = b^2 - 4ac$$", hint: "Même définition que dans $\\mathbb{R}$, mais $\\Delta$ peut être complexe."},
+    {front: "Résolution d'une équation du second degré dans $\\mathbb{C}$", back: "Si $\\Delta = 0$ : solution double $z = -\\dfrac{b}{2a}$.<br>Si $\\Delta \\ne 0$, on note $\\delta$ une racine carrée de $\\Delta$ : $$z_1 = \\frac{-b-\\delta}{2a} \\quad z_2 = \\frac{-b+\\delta}{2a}$$", hint: "$\\delta$ est une racine carrée complexe de $\\Delta$, pas forcément réelle."},
+    {front: "Équation du second degré à coefficients réels : cas $\\Delta<0$", back: "Si $(a,b,c)\\in\\mathbb{R}^3$ et $\\Delta<0$, $(E)$ admet deux solutions complexes conjuguées :<br>$$z_1 = \\frac{-b-i\\sqrt{|\\Delta|}}{2a} \\quad z_2 = \\frac{-b+i\\sqrt{|\\Delta|}}{2a}$$", hint: "Si $\\Delta>0$ on retrouve les deux solutions réelles habituelles."},
+    {front: "Ensemble $\\mathbb{U}$ des complexes de module 1", back: "Pour tout $z$ de module 1, il existe $\\theta\\in\\mathbb{R}$, unique modulo $2\\pi$, tel que $z=e^{i\\theta}$.", hint: "$\\mathbb{U}$ est le cercle trigonométrique vu dans $\\mathbb{C}$."},
+    {front: "Propriétés de $e^{i\\theta}$", back: "$$e^{i\\theta} \\times e^{i\\theta'} = e^{i(\\theta+\\theta')} \\quad \\frac{1}{e^{i\\theta}} = e^{-i\\theta} \\quad \\frac{e^{i\\theta}}{e^{i\\theta'}} = e^{i(\\theta-\\theta')} \\quad (e^{i\\theta})^n = e^{in\\theta}$$", hint: "Ce sont les propriétés usuelles de l'exponentielle, transposées à $i\\theta$."},
+    {front: "Formule de Moivre", back: "$$(\\cos \\theta + i \\sin \\theta)^n = \\cos(n\\theta) + i \\sin(n\\theta)$$", hint: "Se retrouve très facilement avec la forme exponentielle $(e^{i\\theta})^n = e^{in\\theta}$."},
+    {front: "Formules d'Euler", back: "$$\\cos x = \\frac{e^{ix} + e^{-ix}}{2}$$$$\\sin x = \\frac{e^{ix} - e^{-ix}}{2i}$$", hint: "Indispensables pour linéariser les expressions trigonométriques."},
+    {front: "Linéarisation : principe", back: "Transformer un produit de sinus/cosinus en une somme, à l'aide des formules d'Euler.", hint: "Exemple : linéariser $\\sin^3 x$."},
+    {front: "Racines n-ièmes de l'unité", back: "L'équation $z^n = 1$ admet $n$ solutions distinctes :<br>$$z_k = e^{i\\frac{2k\\pi}{n}} \\quad \\text{pour } k \\in \\{0, 1, ..., n-1\\}$$", hint: "Les points images forment un polygone régulier inscrit dans le cercle trigonométrique."},
+    {front: "Somme des racines n-ièmes de l'unité", back: "Pour $n \\ge 2$ :<br>$$\\sum_{k=0}^{n-1} z_k = 0$$", hint: "La somme de toutes les racines n-ièmes de l'unité est nulle."},
+    {front: "Racines n-ièmes d'un complexe non nul $a$", back: "Il suffit de connaître le module et un argument de $a$ pour résoudre $z^n = a$ dans $\\mathbb{C}$.", hint: "On se ramène à la forme exponentielle de $a$."},
+    {front: "Fonction exponentielle complexe", back: "Pour $z = x+iy$, on définit $$e^z = e^x \\times e^{iy}$$", hint: "$f : \\mathbb{C} \\to \\mathbb{C}, \\; z \\mapsto e^z$."},
+    {front: "Propriétés de l'exponentielle complexe", back: "$$|e^z| = e^{\\Re(z)} \\quad \\arg(e^z) = \\Im(z) \\ [2\\pi]$$", hint: "Le module ne dépend que de la partie réelle, l'argument que de la partie imaginaire."},
+    {front: "Configuration géométrique : module et argument d'un rapport", back: "Pour $A(a), B(b), C(c), D(d)$ :<br>$$\\left|\\frac{d-c}{b-a}\\right| = \\frac{CD}{AB} \\qquad \\arg\\left(\\frac{d-c}{b-a}\\right) = (\\overrightarrow{AB}, \\overrightarrow{CD})$$", hint: "Permet de démontrer alignement, parallélisme ou orthogonalité de points."},
+    {front: "Équation d'un cercle dans $\\mathbb{C}$", back: "Pour $A(a)$ et $R \\in \\mathbb{R}^{+*}$ : $|z-a|=R$ est le cercle de centre $A$ et de rayon $R$.<br>$|z-a|\\le R$ est le disque fermé, $|z-a|<R$ le disque ouvert, de centre $A$ et de rayon $R$.", hint: "$|z-a|$ représente la distance $AM$."}
+];
+
 const elecCards = [
     { front: "Loi des Nœuds (Kirchhoff)", back: "La somme des intensités des courants qui entrent par un nœud est égale à la somme des intensités des courants qui en sortent.<br>$$\\sum I_{entrants} = \\sum I_{sortants}$$", hint: "Traduit la conservation de la charge électrique." },
     { front: "Loi des Mailles (Kirchhoff)", back: "Dans une maille orientée fermée, la somme algébrique des tensions est nulle : $$\\sum U_k = 0$$", hint: "Traduit la conservation de l'énergie électrique." },
@@ -162,6 +222,8 @@ const decks = {
     'mecanique_s1': { title: "Outils Maths (Vecteurs, Bases...)", subject: "Mécanique", icon: "fa-wrench", color: "text-orange-400", bgGradient: "from-orange-500 to-red-600", cards: mecaCards, known: new Set() },
     'maths_s1': { title: "Semaine 1 (Démos, Sommes, Binôme)", subject: "Mathématiques", icon: "fa-calculator", color: "text-blue-400", bgGradient: "from-blue-500 to-indigo-600", cards: mathCardsSemaine1, known: new Set() },
     'maths_memento': { title: "Mémento complet (Dérivées, Trigo...)", subject: "Mathématiques", icon: "fa-book-open", color: "text-indigo-300", bgGradient: "from-indigo-600 to-purple-700", cards: mathCardsMemento, known: new Set() },
+    'maths_chap1': { title: "Chapitre 1 : Rédiger, Démontrer, Calculer", subject: "Mathématiques", icon: "fa-calculator", color: "text-blue-400", bgGradient: "from-blue-500 to-indigo-600", cards: mathCardsChap1, known: new Set() },
+    'maths_chap2': { title: "Chapitre 2 : Nombres Complexes", subject: "Mathématiques", icon: "fa-calculator", color: "text-blue-400", bgGradient: "from-blue-500 to-indigo-600", cards: mathCardsChap2, known: new Set() },
     'elec_s1': { title: "Lois fondamentales & Impédances", subject: "Élec", icon: "fa-desktop", color: "text-emerald-400", bgGradient: "from-emerald-500 to-teal-700", cards: elecCards, known: new Set() }
 };
 
@@ -170,7 +232,11 @@ const library = {
     'maths': { 
         title: 'Mathématiques', icon: 'fa-calculator', color: 'text-blue-400', bgGradient: 'from-blue-600 to-indigo-900', 
         rootDecks: ['maths_memento'], 
-        weeks: { 's1': { title: 'Semaine 1 (14 Sept)', decks: ['maths_s1'] } } 
+        weeks: { 
+            's1': { title: 'Semaine 1 (14 Sept)', decks: ['maths_s1'] },
+            'chap1': { title: 'Chapitre 1 : Rédiger, Démontrer, Calculer', decks: ['maths_chap1'] },
+            'chap2': { title: 'Chapitre 2 : Nombres Complexes', decks: ['maths_chap2'] }
+        } 
     },
     'physique': { 
         title: 'Physique', icon: 'fa-bolt', color: 'text-yellow-400', bgGradient: 'from-yellow-600 to-orange-900', 
