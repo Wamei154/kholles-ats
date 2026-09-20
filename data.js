@@ -232,6 +232,26 @@ const mathCardsDS1 = [
     {front: "Réflexe : $|z^n|$ et $\\arg(z^n)$", back: "$$|z^n| = |z|^n \\qquad \\arg(z^n) = n\\arg(z) \\ [2\\pi]$$", hint: "Outil de base pour résoudre toute équation du type $z^n = a$."}
 ];
 
+const mathCardsSemaine2 = [
+    {front: "Formules d'addition (cosinus et sinus)", back: "$$\\cos(a+b) = \\cos a\\cos b - \\sin a\\sin b$$$$\\cos(a-b) = \\cos a\\cos b + \\sin a\\sin b$$$$\\sin(a+b) = \\sin a\\cos b + \\sin b\\cos a$$$$\\sin(a-b) = \\sin a\\cos b - \\sin b\\cos a$$", hint: "Ce sont les 4 formules à connaître par cœur en premier."},
+    {front: "Formule d'addition pour la tangente", back: "$$\\tan(a+b) = \\frac{\\tan a + \\tan b}{1-\\tan a\\tan b}$$", hint: "Se déduit des formules de $\\cos$ et $\\sin$ en divisant."},
+    {front: "Formules de duplication", back: "$$\\cos(2a) = \\cos^2 a - \\sin^2 a = 2\\cos^2 a - 1 = 1-2\\sin^2 a$$$$\\sin(2a) = 2\\sin a\\cos a$$$$\\tan(2a) = \\frac{2\\tan a}{1-\\tan^2 a}$$", hint: "$\\cos(2a)$ a 3 écritures équivalentes, très utiles selon le contexte."},
+    {front: "Formules de conversion produit → somme", back: "$$\\cos a\\cos b = \\frac12\\big(\\cos(a+b)+\\cos(a-b)\\big)$$$$\\sin a\\sin b = \\frac12\\big(\\cos(a-b)-\\cos(a+b)\\big)$$$$\\sin a\\cos b = \\frac12\\big(\\sin(a+b)+\\sin(a-b)\\big)$$", hint: "S'obtiennent en additionnant/soustrayant les formules d'addition deux à deux."},
+    {front: "Formules de conversion somme → produit", back: "Avec $p=a+b$ et $q=a-b$ :<br>$$\\cos p+\\cos q = 2\\cos\\left(\\frac{p+q}{2}\\right)\\cos\\left(\\frac{p-q}{2}\\right)$$$$\\cos p-\\cos q = -2\\sin\\left(\\frac{p+q}{2}\\right)\\sin\\left(\\frac{p-q}{2}\\right)$$$$\\sin p+\\sin q = 2\\sin\\left(\\frac{p+q}{2}\\right)\\cos\\left(\\frac{p-q}{2}\\right)$$$$\\sin p-\\sin q = 2\\sin\\left(\\frac{p-q}{2}\\right)\\cos\\left(\\frac{p+q}{2}\\right)$$", hint: "Utiles pour résoudre des équations trigonométriques du type $\\cos p + \\cos q = 0$."},
+    {front: "Résoudre $\\cos x = \\cos \\alpha$", back: "$$\\cos x = \\cos \\alpha \\Leftrightarrow x = \\alpha \\ [2\\pi] \\quad \\text{ou} \\quad x = -\\alpha \\ [2\\pi]$$", hint: "Deux familles de solutions, symétriques par rapport à l'axe des cosinus."},
+    {front: "Résoudre $\\sin x = \\sin \\alpha$", back: "$$\\sin x = \\sin \\alpha \\Leftrightarrow x = \\alpha \\ [2\\pi] \\quad \\text{ou} \\quad x = \\pi-\\alpha \\ [2\\pi]$$", hint: "Deux familles de solutions, symétriques par rapport à l'axe des sinus."},
+    {front: "Les 3 formes d'un nombre complexe", back: "Algébrique : $z=x+iy$<br>Trigonométrique : $z=|z|(\\cos\\theta+i\\sin\\theta)$<br>Exponentielle : $z=\\rho e^{i\\theta}$, avec $\\rho=|z|$ et $\\theta=\\arg(z)$", hint: "On passe de l'une à l'autre selon ce qui est le plus pratique dans le calcul."},
+    {front: "Formules usuelles du conjugué", back: "$$\\overline{z+z'} = \\overline{z}+\\overline{z'} \\qquad \\overline{zz'} = \\overline{z}\\times\\overline{z'} \\qquad \\overline{z^n} = (\\overline{z})^n \\qquad \\overline{\\left(\\frac{z}{z'}\\right)} = \\frac{\\overline{z}}{\\overline{z'}}$$", hint: "Le conjugué se distribue sur toutes les opérations : somme, produit, quotient, puissance."},
+    {front: "Formules usuelles du module", back: "$$|zz'| = |z|\\times|z'| \\qquad |z^n| = |z|^n \\qquad \\left|\\frac{z}{z'}\\right| = \\frac{|z|}{|z'|}$$", hint: "Le module se comporte comme une valeur absolue vis-à-vis du produit, de la puissance et du quotient."},
+    {front: "Formules usuelles de l'argument", back: "$$\\arg(zz') = \\arg(z)+\\arg(z') \\quad \\arg(z^n) = n\\arg(z) \\quad \\arg\\left(\\frac{z}{z'}\\right) = \\arg(z)-\\arg(z') \\quad [2\\pi]$$", hint: "L'argument transforme les produits/quotients en sommes/différences."},
+    {front: "Racines carrées d'un nombre complexe", back: "Tout nombre complexe non nul $a$ admet deux racines carrées opposées : ce sont les solutions de $z^2=a$.", hint: "Si l'argument de $a$ est connu, on passe par la forme trigonométrique ; sinon on pose $z=x+iy$ et on résout un système."},
+    {front: "Équation du second degré $az^2+bz+c=0$ dans $\\mathbb{C}$", back: "$\\Delta = b^2-4ac$.<br>Si $\\Delta=0$ : $z=-\\dfrac{b}{2a}$ (racine double).<br>Si $\\Delta\\ne0$, on note $\\delta$ une racine carrée de $\\Delta$ : $$z_1=\\frac{-b-\\delta}{2a} \\qquad z_2=\\frac{-b+\\delta}{2a}$$", hint: "Si $(a,b,c)\\in\\mathbb{R}^3$ et $\\Delta<0$ : $z_{1,2}=\\dfrac{-b\\pm i\\sqrt{|\\Delta|}}{2a}$ (solutions conjuguées)."},
+    {front: "Formule de Moivre", back: "$$(\\cos\\theta+i\\sin\\theta)^n = \\cos(n\\theta)+i\\sin(n\\theta)$$", hint: "Se retrouve immédiatement avec $(e^{i\\theta})^n=e^{in\\theta}$."},
+    {front: "Formules d'Euler", back: "$$\\cos x = \\frac{e^{ix}+e^{-ix}}{2} \\qquad \\sin x = \\frac{e^{ix}-e^{-ix}}{2i}$$", hint: "Se démontrent en écrivant $e^{ix}=\\cos x+i\\sin x$ et $e^{-ix}=\\cos x - i\\sin x$, puis en additionnant/soustrayant."},
+    {front: "Racines $n$-ièmes de l'unité : expression", back: "L'équation $z^n=1$ (pour $n\\ge2$) admet $n$ solutions distinctes :<br>$$z_k = e^{i\\frac{2k\\pi}{n}}, \\quad k\\in\\{0,1,...,n-1\\}$$", hint: "Démonstration : poser $z=e^{i\\theta}$, alors $z^n=1 \\Leftrightarrow n\\theta=2k\\pi, k\\in\\mathbb{Z}$."},
+    {front: "Somme des racines $n$-ièmes de l'unité", back: "Pour $n\\ge2$ :<br>$$\\sum_{k=0}^{n-1} z_k = 0$$", hint: "Démonstration : c'est une somme géométrique de raison $e^{i2\\pi/n}\\ne1$."}
+];
+
 const elecCards = [
     { front: "Loi des Nœuds (Kirchhoff)", back: "La somme des intensités des courants qui entrent par un nœud est égale à la somme des intensités des courants qui en sortent.<br>$$\\sum I_{entrants} = \\sum I_{sortants}$$", hint: "Traduit la conservation de la charge électrique." },
     { front: "Loi des Mailles (Kirchhoff)", back: "Dans une maille orientée fermée, la somme algébrique des tensions est nulle : $$\\sum U_k = 0$$", hint: "Traduit la conservation de l'énergie électrique." },
@@ -248,6 +268,7 @@ const decks = {
     'maths_chap1': { title: "Chapitre 1 : Rédiger, Démontrer, Calculer", subject: "Mathématiques", icon: "fa-calculator", color: "text-blue-400", bgGradient: "from-blue-500 to-indigo-600", cards: mathCardsChap1, known: new Set() },
     'maths_chap2': { title: "Chapitre 2 : Nombres Complexes", subject: "Mathématiques", icon: "fa-calculator", color: "text-blue-400", bgGradient: "from-blue-500 to-indigo-600", cards: mathCardsChap2, known: new Set() },
     'maths_ds1': { title: "Révisions DS1 (Techniques & Réflexes)", subject: "Mathématiques", icon: "fa-graduation-cap", color: "text-rose-400", bgGradient: "from-rose-500 to-pink-700", cards: mathCardsDS1, known: new Set() },
+    'maths_semaine2': { title: "Semaine 2 : Formules de colle (Trigo & Complexes)", subject: "Mathématiques", icon: "fa-scroll", color: "text-purple-400", bgGradient: "from-purple-500 to-violet-700", cards: mathCardsSemaine2, known: new Set() },
     'elec_s1': { title: "Lois fondamentales & Impédances", subject: "Élec", icon: "fa-desktop", color: "text-emerald-400", bgGradient: "from-emerald-500 to-teal-700", cards: elecCards, known: new Set() }
 };
 
@@ -259,7 +280,8 @@ const library = {
         weeks: { 
             's1': { title: 'Semaine 1 (14 Sept)', decks: ['maths_s1'] },
             'chap1': { title: 'Chapitre 1 : Rédiger, Démontrer, Calculer', decks: ['maths_chap1'] },
-            'chap2': { title: 'Chapitre 2 : Nombres Complexes', decks: ['maths_chap2'] }
+            'chap2': { title: 'Chapitre 2 : Nombres Complexes', decks: ['maths_chap2'] },
+            's2': { title: 'Semaine 2 (21 Sept)', decks: ['maths_semaine2'] }
         } 
     },
     'physique': { 
