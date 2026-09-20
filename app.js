@@ -100,6 +100,7 @@ function showMainMenu() {
     mainMenuEl.classList.remove('hidden');
     colloscopeAreaEl.classList.add('hidden');
     document.getElementById('edt-area').classList.add('hidden');
+    document.getElementById('deck-summary-area').classList.add('hidden');
     flashcardAreaEl.classList.add('hidden');
     endScreenEl.classList.add('hidden');
     backBtn.classList.add('hidden');
@@ -198,10 +199,12 @@ function createDeckHTML(deckId, isRoot) {
     const known = deck.known.size;
     const progress = total > 0 ? Math.round((known / total) * 100) : 0;
     const rootBadge = isRoot ? `<div class="absolute top-3 left-3 bg-indigo-900/60 border border-indigo-500/30 text-indigo-300 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded shadow-sm z-10"><i class="fa-solid fa-thumbtack mr-1"></i> Transversal</div>` : '';
+    const summaryBadge = deck.summary ? `<div class="absolute top-3 right-3 bg-blue-900/60 border border-blue-500/30 text-blue-300 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded shadow-sm z-10"><i class="fa-solid fa-book-open mr-1"></i> Résumé</div>` : '';
 
     return `
-        <div onclick="selectDeck('${deckId}')" class="bg-slate-800 border border-slate-700 hover:border-slate-500 rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl group relative overflow-hidden flex flex-col h-full">
+        <div onclick="openDeck('${deckId}')" class="bg-slate-800 border border-slate-700 hover:border-slate-500 rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.03] hover:shadow-xl group relative overflow-hidden flex flex-col h-full">
             ${rootBadge}
+            ${summaryBadge}
             <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${deck.bgGradient} opacity-10 rounded-bl-full transition-transform group-hover:scale-110"></div>
             <div class="flex items-center gap-4 mb-4 mt-1">
                 <div class="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-700 shadow-inner">
@@ -336,11 +339,35 @@ function renderSchedule() {
 }
 
 // --- ALGORITHME DE RÉPÉTITION ESPACÉE (Spaced Repetition) ---
+function openDeck(id) {
+    const deck = decks[id];
+    if (deck.summary) {
+        currentDeckId = id;
+        mainMenuEl.classList.add('hidden');
+        document.getElementById('deck-summary-area').classList.remove('hidden');
+        backBtn.classList.remove('hidden');
+
+        document.getElementById('summary-icon-wrap').className = `w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-700 shadow-inner shrink-0`;
+        document.getElementById('summary-icon').className = `fa-solid ${deck.icon} ${deck.color} text-xl`;
+        document.getElementById('summary-title').innerText = `${deck.subject} : ${deck.title}`;
+        document.getElementById('summary-content').innerHTML = deck.summary;
+        renderMath('summary-content');
+    } else {
+        selectDeck(id);
+    }
+}
+
+function startDeckCards() {
+    document.getElementById('deck-summary-area').classList.add('hidden');
+    selectDeck(currentDeckId);
+}
+
 function selectDeck(id) {
     currentDeckId = id;
     const deck = decks[currentDeckId];
     
     mainMenuEl.classList.add('hidden');
+    document.getElementById('deck-summary-area').classList.add('hidden');
     flashcardAreaEl.classList.remove('hidden');
     backBtn.classList.remove('hidden');
     progressContainer.classList.remove('hidden');
@@ -411,9 +438,9 @@ function loadCardIntoDOM(index) {
     }, 150);
 }
 
-function renderMath() {
+function renderMath(elementId) {
     if (window.renderMathInElement) {
-        renderMathInElement(document.getElementById('flashcard'), {
+        renderMathInElement(document.getElementById(elementId || 'flashcard'), {
             delimiters: [ {left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false} ],
             throwOnError : false
         });
