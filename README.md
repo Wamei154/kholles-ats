@@ -1,47 +1,36 @@
-# 🎓 Khôlles ATS
+# Khôlles ATS
 
-Application web personnelle pour suivre le programme de khôlles et réviser efficacement en prépa **ATS** (Lycée Blaise Pascal, Rouen).
+Petit site que je bricole pour m'aider à suivre mes khôlles et réviser, en prépa ATS au lycée Blaise Pascal (Rouen).
 
-## ✨ Fonctionnalités
+Au départ c'était juste pour avoir le colloscope sous la main sans réouvrir un PDF à chaque fois, et ça a fini par prendre des flashcards aussi.
 
-- **Colloscope interactif** : affiche les khôlles programmées (matière, professeur, salle, horaire) et les devoirs à venir, selon ton groupe de khôlle et la semaine sélectionnée.
-- **Emploi du temps** : consultation rapide de l'EDT avec zoom.
-- **Bibliothèque de flashcards** : paquets de révision par matière et par chapitre (Mathématiques, Physique, Mécanique, Électronique...), avec :
-  - suivi de progression par carte (mémorisation espacée simplifiée),
-  - indices/astuces au dos de chaque carte,
-  - rendu LaTeX (formules) via KaTeX,
-  - pages de résumé de cours avant certains paquets de cartes.
+## Ce qu'il y a dedans
 
-## 🛠️ Stack technique
+- **Colloscope** : tu choisis ton groupe et la semaine, ça t'affiche direct tes khôlles (prof, salle, horaire) et les devoirs à rendre.
+- **Emploi du temps** en un clic, avec zoom sur l'image.
+- **Flashcards** par matière et par chapitre, avec un système basique de "à revoir / acquis" pour pas retomber sur les cartes que tu maîtrises déjà. Certains paquets ont une page de résumé de cours à lire avant.
 
-- HTML / CSS (Tailwind CDN) / JavaScript vanilla — aucun framework, aucune dépendance à installer.
-- [KaTeX](https://katex.org/) pour l'affichage des formules mathématiques.
-- [Font Awesome](https://fontawesome.com/) pour les icônes.
-- Progression sauvegardée en local (`localStorage`) : rien n'est envoyé à un serveur.
+## Techno
 
-## 📂 Structure du projet
+Rien de compliqué : du HTML/CSS/JS pur, Tailwind chargé en CDN, KaTeX pour les formules. Pas de build, pas de dépendances à installer. La progression sur les flashcards reste dans le navigateur (localStorage), rien n'est envoyé nulle part.
 
-| Fichier | Rôle |
-|---|---|
-| `index.html` | Structure de la page et composants d'interface |
-| `app.js` | Logique de l'application (navigation, flashcards, colloscope) |
-| `data.js` | Données : colloscope, emploi du temps, paquets de flashcards |
-| `style.css` | Styles complémentaires (carte 3D, scrollbar, etc.) |
-| `edt.jpg` | Image de l'emploi du temps |
+## Fichiers
 
-## 🚀 Utilisation
+- `index.html` : la page
+- `app.js` : toute la logique (navigation, flashcards, colloscope)
+- `data.js` : les données — colloscope, EDT, paquets de cartes
+- `style.css` : quelques styles en plus (carte qui se retourne, etc.)
+- `edt.jpg` : l'emploi du temps
 
-Le site est entièrement statique : ouvre simplement `index.html` dans un navigateur, ou héberge le dossier tel quel (GitHub Pages, Netlify, etc.). Aucune installation ni build n'est nécessaire.
+## Pour lancer
 
-## 📝 Mettre à jour les données
+Y a rien à installer, tu ouvres `index.html` dans un navigateur et c'est bon. Sinon ça tourne aussi tel quel sur GitHub Pages.
 
-- **Colloscope / groupes** : à modifier dans `data.js`, tableaux `groups` de chaque matière (un élément par semaine).
-- **Nouveau paquet de flashcards** : ajouter un tableau de cartes (`front`/`back`/`hint`) et une entrée dans l'objet `decks`, puis la référencer dans `library`.
+## Modifier les données
 
-## ⚠️ Statut
+- Colloscope / groupes de TP : dans `data.js`, tableau `groups` de chaque matière (une valeur par semaine).
+- Ajouter un paquet de flashcards : un tableau de cartes (`front` / `back` / `hint`) + une entrée dans `decks`, puis la rattacher dans `library`.
 
-Projet en développement personnel, maintenu au fil de l'année scolaire — les informations du colloscope sont à vérifier auprès des sources officielles.
+## ⚠️
 
-## 📄 Licence
-
-Ce projet est publié sous licence MIT (voir [`LICENSE`](./LICENSE)) — usage libre, sans garantie.
+C'est un projet que je fais pour moi, en cours d'année, donc c'est jamais figé et il peut y avoir des erreurs — vérifiez toujours les infos importantes (colloscope notamment) avec les sources officielles.
