@@ -1,6 +1,6 @@
 # Khôlles ATS
 
-Petit site que je bricole pour m'aider à suivre mes khôlles et réviser, en prépa ATS au lycée Blaise Pascal (Rouen).
+Petit site que je bricole avec claude et gemini pour m'aider à suivre mes khôlles et réviser, en prépa ATS au lycée Blaise Pascal (Rouen).
 
 Au départ c'était juste pour avoir le colloscope sous la main sans réouvrir un PDF à chaque fois, et ça a fini par prendre des flashcards aussi.
 
